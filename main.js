@@ -16,16 +16,22 @@ client.authorize(function(err, tokens){
     }
     else {
         console.log('Connected!');
-        ADD_COLUMN(client);
+        table_name = "TestTable";
+        SELECT(client, table_name);
     }
 });
 
-async function SELECT(client_user) {
-    const api = google.sheets({version: 'v4', auth: client_user});
-    const request = {
+function FROM(table_name) {
+    const table_info = {
         spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
-        range: 'TestTable'  // == 'TestTable!A1:B5'
+        range: table_name
     };
+    return table_info;
+}
+
+async function SELECT(client_user, table_name) {
+    const api = google.sheets({version: 'v4', auth: client_user});
+    const request = FROM(table_name);
 
     let res = await api.spreadsheets.values.get(request);
     console.log(res.data.values);
