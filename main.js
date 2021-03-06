@@ -16,17 +16,33 @@ client.authorize(function(err, tokens){
     }
     else {
         console.log('Connected!');
-        SELECT(client);
+        ADD_COLUMN(client);
     }
 });
 
 async function SELECT(client_user) {
-    const google_spreadsheet_api = google.sheets({version: 'v4', auth: client_user});
+    const api = google.sheets({version: 'v4', auth: client_user});
     const request = {
         spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
         range: 'TestTable'  // == 'TestTable!A1:B5'
     };
 
-    var res = await google_spreadsheet_api.spreadsheets.values.get(request);
+    let res = await api.spreadsheets.values.get(request);
     console.log(res.data.values);
+}
+
+async function ADD_COLUMN(client_user) {
+    const api = google.sheets({version: 'v4', auth: client_user});
+
+    new_column = [['ADD COLUMN', 'ADD COLUMN', 'ADD COLUMN']]
+
+    const request = {
+        spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
+        range: 'TestTable!C1',
+        valueInputOption: 'USER_ENTERED',
+        resource: {values: new_column}
+    };
+
+    let res = await api.spreadsheets.values.update(request);
+    console.log(res);
 }
