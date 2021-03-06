@@ -17,7 +17,7 @@ client.authorize(function(err, tokens){
     else {
         console.log('Connected!');
         table_name = "TestTable";
-        SELECT(client, table_name);
+        CREATE(client);
     }
 });
 
@@ -50,5 +50,25 @@ async function ADD_COLUMN(client_user) {
     };
 
     let res = await api.spreadsheets.values.update(request);
+    console.log(res);
+}
+
+async function CREATE(client_user) {
+    const api = google.sheets({ version: 'v4', auth: client_user });
+
+    const request = {
+        spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
+        requestBody: {
+            requests: [{
+                addSheet: {
+                    properties: {
+                        title: "NewTable"
+                    }
+                }
+            }]
+        }
+    };
+
+    const res = await api.spreadsheets.batchUpdate(request);
     console.log(res);
 }
