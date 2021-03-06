@@ -16,5 +16,17 @@ client.authorize(function(err, tokens){
     }
     else {
         console.log('Connected!');
+        SELECT(client);
     }
 });
+
+async function SELECT(client_user) {
+    const google_spreadsheet_api = google.sheets({version: 'v4', auth: client_user});
+    const request = {
+        spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
+        range: 'TestTable'  // == 'TestTable!A1:B5'
+    };
+
+    var res = await google_spreadsheet_api.spreadsheets.values.get(request);
+    console.log(res.data.values);
+}
