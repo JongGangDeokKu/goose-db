@@ -15,10 +15,7 @@ function main() {
         }
         else {
             console.log('Connected!');
-            await getEmail();
-            // console.log(email);
-            // table_name = "TestTable";
-            // CREATE_DATABASE(client, keys.editor_email);
+            CREATE_DATABASE(client);
             
         }
     });
@@ -26,7 +23,7 @@ function main() {
 
 
 
-async function getEmail() {
+async function initEmail() {
     let email = null;
     email = await new Promise((resolve) => {
         let email_re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -42,7 +39,7 @@ async function getEmail() {
                 console.log("Get Correct e-mail");
                 resolve(line);
                 const data = JSON.parse(fs.readFileSync('keys.json'));
-                data.editor_email = line;
+                data.editor_email = [line];
                 fs.writeFileSync('keys.json', JSON.stringify(data));
                 rl.close();
             }
@@ -117,7 +114,7 @@ async function CREATE_TABLE(client_user) {
     console.log(res);
 }
 
-async function CREATE_DATABASE(client_user, user_email) {
+async function CREATE_DATABASE(client_user) {
     const api = google.sheets({ version: 'v4', auth: client_user });
 
     const request = {
@@ -128,21 +125,28 @@ async function CREATE_DATABASE(client_user, user_email) {
         }
     }
 
-    const res_ss = await api.spreadsheets.create(request);
-    console.log(res_ss.data.spreadsheetId);
+    if (keys.hasOwnProperty('editor_email')){
+        console.log("You can access in " + keys.editor_email);
+    }
+    else await initEmail();
 
+    const res_ss = await api.spreadsheets.create(request);
     const fileId = res_ss.data.spreadsheetId;
-    drive = google.drive({ version: "v3", auth: client });
-    const res_drive = await drive.permissions.create({
-        resource: {
-            type: "user",
-            role: "writer",
-            emailAddress: user_email,  // Please set the email address you want to give the permission.
-        },
-        fileId: fileId,
-        fields: "id",
+    
+    // Give permission
+    drive = google.drive({ version: "v3", auth: client_user });
+    keys.editor_email.forEach(async function(email) {
+        const res_drive = await drive.permissions.create({
+            resource: {
+                type: "user",
+                role: "writer",
+                emailAddress: email
+            },
+            fileId: fileId,
+            fields: "id",
+        });
     });
 
-    console.log(res_drive);
+    console.log("You can access sheet : https://docs.google.com/spreadsheets/d/" + fileId + "/edit")
     return res_ss.data.spreadsheetId;
 }
