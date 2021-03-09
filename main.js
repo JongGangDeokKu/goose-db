@@ -1,7 +1,7 @@
 const {google} = require('googleapis');
 const keys = require('./keys.json');
 const readline = require('readline');
-let email = [];
+const fs = require('fs');
 
 main();
 
@@ -18,7 +18,7 @@ function main() {
             await getEmail();
             // console.log(email);
             // table_name = "TestTable";
-            // CREATE_DATABASE(client, email[0]);
+            // CREATE_DATABASE(client, keys.editor_email);
             
         }
     });
@@ -27,6 +27,7 @@ function main() {
 
 
 async function getEmail() {
+    let email = null;
     email = await new Promise((resolve) => {
         let email_re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
         let rl = readline.createInterface({
@@ -38,17 +39,18 @@ async function getEmail() {
         rl.prompt();
         rl.on('line', (line) => {
             if (email_re.test(line)) {
-                email.push(line);
                 console.log("Get Correct e-mail");
-                rl.close();
                 resolve(line);
+                const data = JSON.parse(fs.readFileSync('keys.json'));
+                data.editor_email = line;
+                fs.writeFileSync('keys.json', JSON.stringify(data));
+                rl.close();
             }
             else {
                 console.log("ERR:: Not e-mail regular expression\nPlease input again!");
                 rl.prompt();
             }
         });
-        return email;
     });
 }
 
