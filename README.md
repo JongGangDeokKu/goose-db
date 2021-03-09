@@ -27,3 +27,14 @@ You can get this repository with this command.
 ```
 $ git clone https://github.com/JongGangDeokKu/sql2google-ss.git
 ```
+
+
+## 2. Python
+
+This Branch is implemented in Python.
+
+```
+requirements Library
+
+googleapis
+```
