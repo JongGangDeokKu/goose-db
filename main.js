@@ -1,22 +1,56 @@
 const {google} = require('googleapis');
 const keys = require('./keys.json');
+const readline = require('readline');
+let email = [];
 
+main();
 
 // Test main.js
-const client = setClient(keys);
-client.authorize(function(err, tokens){
-    if(err) {
-        console.log(err);
-        return;
-    }
-    else {
-        console.log('Connected!');
-        // table_name = "TestTable";
-        CREATE_DATABASE(client, "deokk1112@gmail.com");
-        
-    }
-});
+function main() {
+    const client = setClient(keys);
+    client.authorize(async function(err, tokens){
+        if(err) {
+            console.log(err);
+            return;
+        }
+        else {
+            console.log('Connected!');
+            await getEmail();
+            // console.log(email);
+            // table_name = "TestTable";
+            // CREATE_DATABASE(client, email[0]);
+            
+        }
+    });
+}
 
+
+
+async function getEmail() {
+    email = await new Promise((resolve) => {
+        let email_re = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+        let rl = readline.createInterface({
+            input: process.stdin,
+            output:process.stdout
+        });
+        console.log("Input your e-mail address");
+        rl.setPrompt('> ');
+        rl.prompt();
+        rl.on('line', (line) => {
+            if (email_re.test(line)) {
+                email.push(line);
+                console.log("Get Correct e-mail");
+                rl.close();
+                resolve(line);
+            }
+            else {
+                console.log("ERR:: Not e-mail regular expression\nPlease input again!");
+                rl.prompt();
+            }
+        });
+        return email;
+    });
+}
 
 function setClient(auth_key) {
     // google auth for JSON Web Token
