@@ -27,3 +27,81 @@ You can get this repository with this command.
 ```
 $ git clone https://github.com/JongGangDeokKu/sql2google-ss.git
 ```
+
+SQL syntax guides (Not reflected yet)
+
+``` js
+const express = require('express')
+const GooseDB = require('GooseDB')
+​
+var connection = GooseDB.createConnection({
+    GoogleEmail : 'whdgusdl97@gmail.com',
+    token : 'token.json',
+    keys : 'keys.json',
+    database : 'speardSheet_ID'
+})
+​
+connection.connect()
+​
+// SELECT
+connection.query('SELECT * FROM A',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 값 출력,',result)
+})
+​
+// WHERE
+connection.query('SELECT * FROM A WHERE A.A = 1',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// AND OR NOT
+connection.query('SELECT * FROM A WHERE NOT A.A = 1 AND A.B = 2 OR A.C = 3',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// ORDER BY
+connection.query('SELECT * FROM A ORDER BY A.A DESC',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// INSERT
+connection.query('INSERT INTO A VALUES (?,?,?)',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// UPDATE
+connection.query('UPDATE A SET A.C = 4',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// DELETE
+connection.query('DELETE FROM A WHERE A.A = 1',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// UPDATE
+connection.query('UPDATE A SET A.C = 4',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// UNION
+connection.query('SELECT * FROM A WHERE A.A = 1 UNION ALL SELECT * FROM B WHERE B.A = 1',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+// EXIST
+connection.query('SELECT * FROM A WHERE EXIST(SELECT A.A FROM A WHERE A.A=1',function(err,result,fields){
+    if (error) throw err;
+    console.log('데이터베이스 쿼리 결과값 출력,',result)
+})
+​
+connection.end();
+```
