@@ -1,4 +1,4 @@
-# sql2google-ss
+# Goosedb
 
 ## 1. Setting for Google APIs
 
@@ -18,7 +18,6 @@ When you add credential to your project, you have to select **Web server, Applic
 
 And copy the key and rename key to **keys.json**.
 
----
 
 ## 2. Guides
 
