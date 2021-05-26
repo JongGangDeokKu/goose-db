@@ -14,9 +14,8 @@ function main() {
             return;
         }
         else {
-            console.log('Connected!');
-            let db_name = "GooseDB";
-            let sheet_id = CREATE_DATABASE(client, db_name);
+            let table_name = "TEST_TABLE";
+            CREATE_TABLE(client, sheet_id, table_name);
         }
     });
 }
@@ -92,7 +91,7 @@ async function ADD_COLUMN(client_user, sheet_id) {
     console.log(res);
 }
 
-async function CREATE_TABLE(client_user, sheet_id) {
+async function CREATE_TABLE(client_user, sheet_id, table_name) {
     const api = google.sheets({ version: 'v4', auth: client_user });
 
     const request = {
@@ -101,7 +100,7 @@ async function CREATE_TABLE(client_user, sheet_id) {
             requests: [{
                 addSheet: {
                     properties: {
-                        title: "NewTable"
+                        title: table_name
                     }
                 }
             }]
