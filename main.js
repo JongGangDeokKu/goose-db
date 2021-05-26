@@ -15,13 +15,11 @@ function main() {
         }
         else {
             console.log('Connected!');
-            CREATE_DATABASE(client);
-            
+            let db_name = "GooseDB";
+            let sheet_id = CREATE_DATABASE(client, db_name);
         }
     });
 }
-
-
 
 async function initEmail() {
     let email = null;
@@ -64,7 +62,7 @@ function setClient(auth_key) {
 
 function FROM(table_name) {
     const table_info = {
-        spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
+        spreadsheetId: sheet_id,
         range: table_name
     };
     return table_info;
@@ -78,13 +76,13 @@ async function SELECT(client_user, table_name) {
     console.log(res.data.values);
 }
 
-async function ADD_COLUMN(client_user) {
+async function ADD_COLUMN(client_user, sheet_id) {
     const api = google.sheets({version: 'v4', auth: client_user});
 
     new_column = [['ADD COLUMN', 'ADD COLUMN', 'ADD COLUMN']]
 
     const request = {
-        spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
+        spreadsheetId: sheet_id,
         range: 'TestTable!C1',
         valueInputOption: 'USER_ENTERED',
         resource: {values: new_column}
@@ -94,11 +92,11 @@ async function ADD_COLUMN(client_user) {
     console.log(res);
 }
 
-async function CREATE_TABLE(client_user) {
+async function CREATE_TABLE(client_user, sheet_id) {
     const api = google.sheets({ version: 'v4', auth: client_user });
 
     const request = {
-        spreadsheetId: '1KUgNG3gqnihwT45KbmhSYYCjdJvotoOVNddbn8v127M',
+        spreadsheetId: sheet_id,
         requestBody: {
             requests: [{
                 addSheet: {
@@ -114,13 +112,13 @@ async function CREATE_TABLE(client_user) {
     console.log(res);
 }
 
-async function CREATE_DATABASE(client_user) {
+async function CREATE_DATABASE(client_user, db_name) {
     const api = google.sheets({ version: 'v4', auth: client_user });
 
     const request = {
         resource: {
             properties: {
-                title: "NewDatabase"
+                title: db_name
             }
         }
     }
@@ -132,7 +130,7 @@ async function CREATE_DATABASE(client_user) {
 
     const res_ss = await api.spreadsheets.create(request);
     const fileId = res_ss.data.spreadsheetId;
-    
+
     // Give permission
     drive = google.drive({ version: "v3", auth: client_user });
     keys.editor_email.forEach(async function(email) {
