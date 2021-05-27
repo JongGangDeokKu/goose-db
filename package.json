@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.js",
   "dependencies": {
-    "googleapis": "^39.2.0"
+    "googleapis": "^74.2.0",
+    "node-sql-parser": "^3.5.0"
   },
   "devDependencies": {},
   "scripts": {
