@@ -24,13 +24,13 @@ function command() {
     rl.prompt();
     rl.on('line', (line) => {
         try {
-            let commit_re = /commit(\s*)(;?)/
-            let rollback_re = /rollback(\s*)(;?)/
-            if (commit_re.test(line.toLowerCase())){
+            let commit_re = /commit(\s*)(;?)/i
+            let rollback_re = /rollback(\s*)(;?)/i
+            if (commit_re.test(line)){
                 console.log('commit!!');
                 rl.close();
             }
-            else if (rollback_re.test(line.toLowerCase())) {
+            else if (rollback_re.test(line)) {
                 console.log('rollback!!');
                 rl.close();
             }

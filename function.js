@@ -1,8 +1,10 @@
 const { google } = require("googleapis");
 const key = require("./keys.json");
+const database_info = ("./database_info.json");
 const readline = require("readline");
 const fs = require("fs");
 const sheet_id = "10IS-ubZe0MAW7yMvQlZzZmoiQ5Amyapq2RE3azWWMqQ";
+
 main();
 // Test main.js
 function main() {
@@ -15,10 +17,10 @@ function main() {
             const dbName = "gooseDB-TEST";
             const table = "Sheet2";
             const query = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
-            SELECT(client, sheet_id, table, query);
+            // SELECT(client, sheet_id, table, query);
             // INSERT(client, sheet_id);
             //DELETE(client, sheet_id);
-            // const sheetId = await CREATE_DATABASE(client, dbName);
+            const sheetId = await CREATE_DATABASE(client, dbName);
             // SELECT(client, "Sheet2");
         }
     });
@@ -158,6 +160,7 @@ async function CREATE_TABLE(client_user, sheet_id, table_name) {
     const res = await api.spreadsheets.batchUpdate(request);
     console.log(res);
 }
+
 async function CREATE_DATABASE(client_user, db_name) {
     const api = google.sheets({ version: "v4", auth: client_user });
     const request = {
@@ -165,12 +168,20 @@ async function CREATE_DATABASE(client_user, db_name) {
             properties: {
                 title: db_name,
             },
+            sheets: [
+                {
+                    properties: {
+                        title: 'select table'
+                    }
+                }
+            ]
         },
     };
     if (key.hasOwnProperty("editor_email")) {
         console.log("You can access in " + key.editor_email);
     } else initEmail();
     const res_ss = await api.spreadsheets.create(request);
+    console.log(res_ss.data.sheets[0]);
     const fileId = res_ss.data.spreadsheetId;
     // Give permission
     drive = google.drive({ version: "v3", auth: client_user });
@@ -187,8 +198,19 @@ async function CREATE_DATABASE(client_user, db_name) {
     });
     console.log(
         "You can access sheet : https://docs.google.com/spreadsheets/d/" +
-            fileId +
-            "/edit"
+        fileId +
+        "/edit"
     );
+
+    let new_info = {
+        db_name: db_name,
+        fileId: [fileId],
+        table: [0],
+        columns: []
+    }
+    const db_info = JSON.parse(fs.readFileSync("database_info.json"));
+    db_info.unshift(new_info);
+    fs.writeFileSync("database_info.json", JSON.stringify(db_info));
+
     return res_ss.data.spreadsheetId;
 }
