@@ -3,7 +3,7 @@ const key = require("./keys.json");
 const database_info = ("./database_info.json");
 const readline = require("readline");
 const fs = require("fs");
-const sheet_id = "10IS-ubZe0MAW7yMvQlZzZmoiQ5Amyapq2RE3azWWMqQ";
+// const sheet_id = "";
 
 main();
 // Test main.js
@@ -181,7 +181,6 @@ async function CREATE_DATABASE(client_user, db_name) {
         console.log("You can access in " + key.editor_email);
     } else initEmail();
     const res_ss = await api.spreadsheets.create(request);
-    console.log(res_ss.data.sheets[0]);
     const fileId = res_ss.data.spreadsheetId;
     // Give permission
     drive = google.drive({ version: "v3", auth: client_user });
@@ -205,7 +204,12 @@ async function CREATE_DATABASE(client_user, db_name) {
     let new_info = {
         db_name: db_name,
         fileId: [fileId],
-        table: [0],
+        table: [
+            {
+                title: res_ss.data.sheets[0].properties.title,
+                sheetID: res_ss.data.sheets[0].properties.sheetId
+            }
+        ],
         columns: []
     }
     const db_info = JSON.parse(fs.readFileSync("database_info.json"));
@@ -214,3 +218,4 @@ async function CREATE_DATABASE(client_user, db_name) {
 
     return res_ss.data.spreadsheetId;
 }
+
