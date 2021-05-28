@@ -5,7 +5,7 @@ const parser = new Parser();
 // ---------------------------- AST ------------------------------------------
 const selectast = parser.astify("SELECT * FROM student");
 const selectast2 = parser.astify("SELECT * FROM student WHERE A.A = 1");
-const selectast3 = parser.astify("SELECT * FROM student WHERE (SELECT * FROM B)")
+const selectast3 = parser.astify("SELECT * FROM student WHERE (SELECT A FROM B WHERE (SELECT B FROM C))")
 const insertast = parser.astify("insert into usertbl (a,b,c) values ('덕배 `바보` `똥개`', 2, 'db2', '010-1234-5678', '감기')");
 const createast = parser.astify('CREATE DATABASE Hotel');
 const createast2 = parser.astify("CREATE TABLE Test (ID INT, Name VARCHAR(30), ReserveDate DATE,RoomNum INT NOT NULL)");
@@ -66,6 +66,28 @@ type_check(SETAST_ARRAY);
 
 console.log(type_arr)
 
+function select_where(ast){
+    var ss_ast;
+    if (ast == null){
+        return ;
+    }
+    else if (ast.type == 'select'){
+        var where_select = ast.type;
+        var where_distinct = ast.distinct;
+        var where_colunms = ast.columns;
+        var where_from = ast.from[0];
+        ss_ast = {
+            select : where_select,
+            distinct : where_distinct,
+            columns : where_colunms,
+            from : where_from,
+            where : select_where(ast.where),
+        }
+        return ss_ast;
+    }
+}
+
+console.log(select_where(selectast3));
 class Translator{
 
     constructor(ast){
@@ -74,12 +96,13 @@ class Translator{
     }
 
     transalating(){
+        let columns, table,values, ss_ast;
         switch(this.type){
             case 'insert':
-                let values = this.ast.values[0].value;
-                let table = this.ast.table[0].table;
-                let columns = this.ast.columns;
-                let ss_ast = {
+                values = this.ast.values[0].value;
+                table = this.ast.table[0].table;
+                columns = this.ast.columns;
+                ss_ast = {
                     spreadsheetF : 'insertRow',
                     // 행 삽입하는 구글 스프레드 시트 api 함수 적용
                     db : 'spreadsheetID',
@@ -92,11 +115,51 @@ class Translator{
                     // VALUE값이 타입이 일치하는지 검사하기
                 }
                 return ss_ast
+            case 'select':
+                let distinct = this.ast.distinct;
+                columns = this.ast.columns;
+                table = this.ast.from[0].table;
+                let where = this.ast.where;
+                let groupby = this.ast.groupby;
+                if (where == null){
+                    ss_ast = {
+                        spreadsheetF : 'search',
+                        db : 'spreadsheetID',
+                        table : table,
+                        columns : columns,
+                    }
+                }
+                else if (where.type == 'binary_exper'){
+                    var operator = where.operator;
+                    var left = where.left;
+                    var right = where.right;
+                    var left_info = [left.type,left.table,left.columns];
+                    var right_info = [right.type, right.value];
+                    ss_ast = {
+                        spreadsheetF : 'search',
+                        db : 'spreadsheetID',
+                        table : table,
+                        columns : columns,
+                        where : 'binary',
+                        where_info : {
+                            left : left_info,
+                            right : right_info,
+                        }
+                    }
+                }
+                // else if (where.type == 'select'){
+                //     var where_distinct = where.distinct;
+                //     var where_columns = where.columns;
+                //     var where_from = where.from;
+                //     var where_where = 
+                // }
+                
+
         }
-        // return ss_ast;
+        // return ss_ast;1
     }
 }
-console.log(insertast)
+// console.log(selectast3)
 translator = new Translator(insertast)
 // translator.transalating(this.ast)
  // mysql sql grammer parsed by default
