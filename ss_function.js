@@ -183,7 +183,7 @@ class GooseDB {
 /* */
 const main = async () => {
     const { google } = require("googleapis");
-    const key = require("./keys.json");
+    const key = require("./credentials.json");
     const gooseDB = new GooseDB(google, key, "10IS-ubZe0MAW7yMvQlZzZmoiQ5Amyapq2RE3azWWMqQ");
     const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
     await gooseDB.connect();

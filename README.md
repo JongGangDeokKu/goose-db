@@ -16,7 +16,7 @@ If you want to full access, Select Role to Owner.
 
 When you add credential to your project, you have to select **Web server, Application Data**, and you must have to key type, **JSON**.
 
-And copy the key and rename key to **keys.json**.
+And copy the key, **credentials.json** to this directory.
 
 
 ## 2. Guides
