@@ -20,146 +20,270 @@ const existast2 = parser.astify("UPDATE Reservation SET RoomNum = 2002 WHERE EXI
 const existast3 = parser.astify("DELETE FROM Reservation as A WHERE EXISTS (SELECT A FROM B)")
 // console.log("SELECT * FROM student".split(' '))
 // ---------------------------- AST ARRAY -------------------------------------
-const CREATEAST_ARRAY = [createast,createast2];
-const SELECTAST_ARRAY = [selectast, selectast2,selectast3];
+const CREATEAST_ARRAY = [createast, createast2];
+const SELECTAST_ARRAY = [selectast, selectast2, selectast3];
 const INSERTAST_ARRAY = [insertast];
 const DROPAST_ARRAY = [dropast];
-const DELETEAST_ARRAY = [deleteast,deleteast2];
+const DELETEAST_ARRAY = [deleteast, deleteast2];
 const UPDATEAST_ARRAY = [updateast];
-const UNIONAST_ARRAY = [unionast,unionast2];
-const EXISTAST_ARRAY = [existast,existast2,existast3];
-const FROMAST_ARRAY = [selectast,unionast];
-const WHEREAST_ARRAY = [selectast2,deleteast,updateast];
+const UNIONAST_ARRAY = [unionast, unionast2];
+const EXISTAST_ARRAY = [existast, existast2, existast3];
+const FROMAST_ARRAY = [selectast, unionast];
+const WHEREAST_ARRAY = [selectast2, deleteast, updateast];
 const SETAST_ARRAY = [updateast]
 
 
 // ------------------------------AST TYPE --------------------------------------
-let type_arr = []
 
-function type_check(arr){
-    for (var i = 0; i<arr.length ; i++){
-        type_arr.push(arr[i].type)
-    }
-}
-// CREATEAST_TYPE => type = create
-type_check(CREATEAST_ARRAY);
-// SELECTAST_TYPE => type = select
-type_check(SELECTAST_ARRAY);
-// INSERTAST_TYPE => type = insert
-type_check(INSERTAST_ARRAY);
-// DROPAST_TYPE => type = drop
-type_check(DROPAST_ARRAY);
-// DELETEAST_TYPE => type = delete
-type_check(DELETEAST_ARRAY);
-// UPDATEAST_TYPE => type = update
-type_check(UPDATEAST_ARRAY);
-// UNIONAST_TYPE => type = select
-type_check(UNIONAST_ARRAY);
-// DROPAST_TYPE => type = 
-type_check(EXISTAST_ARRAY);
-// DROPAST_TYPE => type = drop
-type_check(FROMAST_ARRAY);
-// DROPAST_TYPE => type = drop
-type_check(WHEREAST_ARRAY);
-// DROPAST_TYPE => type = drop
-type_check(SETAST_ARRAY);
+class Translator {
 
-console.log(type_arr)
-
-function select_where(ast){
-    var ss_ast;
-    if (ast == null){
-        return ;
-    }
-    else if (ast.type == 'select'){
-        var where_select = ast.type;
-        var where_distinct = ast.distinct;
-        var where_colunms = ast.columns;
-        var where_from = ast.from[0];
-        ss_ast = {
-            select : where_select,
-            distinct : where_distinct,
-            columns : where_colunms,
-            from : where_from,
-            where : select_where(ast.where),
+    select_where(ast) {
+        var ss_ast;
+        if (ast == null) {
+            return;
         }
-        return ss_ast;
+        else if (ast.type == 'select') {
+            var where_select = ast.type;
+            var where_distinct = ast.distinct;
+            var where_colunms = ast.columns;
+            var where_from = ast.from[0];
+            ss_ast = {
+                select: where_select,
+                distinct: where_distinct,
+                columns: where_colunms,
+                from: where_from,
+                where: select_where(ast.where),
+            }
+            return ss_ast;
+        }
     }
-}
+    insert(ast) {
+        var columns = ast.columns;
+        var values = ast.values[0].value;
+        if (values.length > columns.length) {
+            console.log('err');
+            return false;
+        }
 
-console.log(select_where(selectast3));
-class Translator{
-
-    constructor(ast){
-        this.ast = ast;
-        this.type = ast.type;
+        var ss_ast = {
+            function: 'insert_row',
+            table: ast.table[0].table,
+            columns: columns,
+            values: values,
+        }
+        return ss_ast
     }
-
-    transalating(){
-        let columns, table,values, ss_ast;
-        switch(this.type){
-            case 'insert':
-                values = this.ast.values[0].value;
-                table = this.ast.table[0].table;
-                columns = this.ast.columns;
-                ss_ast = {
-                    spreadsheetF : 'insertRow',
-                    // 행 삽입하는 구글 스프레드 시트 api 함수 적용
-                    db : 'spreadsheetID',
-                    // SPRAEDSHEET 아이디 가져오기
-                    table : table,
-                    // 시트 테이블 가져오기
-                    columns : columns,
-                    // 쿼리내 컬럼과 테이블 컬럼 비교할 필요
-                    values : values,
-                    // VALUE값이 타입이 일치하는지 검사하기
+    create(ast) {
+        switch (ast.keyword) {
+            case 'database':
+                const database = ast.database;
+                var ss_ast = {
+                    function: 'create_database',
+                    db_name: database,
                 }
                 return ss_ast
-            case 'select':
-                let distinct = this.ast.distinct;
-                columns = this.ast.columns;
-                table = this.ast.from[0].table;
-                let where = this.ast.where;
-                let groupby = this.ast.groupby;
-                if (where == null){
-                    ss_ast = {
-                        spreadsheetF : 'search',
-                        db : 'spreadsheetID',
-                        table : table,
-                        columns : columns,
-                    }
-                }
-                else if (where.type == 'binary_exper'){
-                    var operator = where.operator;
-                    var left = where.left;
-                    var right = where.right;
-                    var left_info = [left.type,left.table,left.columns];
-                    var right_info = [right.type, right.value];
-                    ss_ast = {
-                        spreadsheetF : 'search',
-                        db : 'spreadsheetID',
-                        table : table,
-                        columns : columns,
-                        where : 'binary',
-                        where_info : {
-                            left : left_info,
-                            right : right_info,
-                        }
-                    }
-                }
-                // else if (where.type == 'select'){
-                //     var where_distinct = where.distinct;
-                //     var where_columns = where.columns;
-                //     var where_from = where.from;
-                //     var where_where = 
-                // }
-                
 
+            case 'table':
+                console.log("complete");
+                // console.log(ast);
+                var columns = [];
+                for (var i in ast.create_definitions) {
+                    columns.push({
+                        "column": ast.create_definitions[i],
+                        "type": ast.create_definitions[i].definition.dataType,
+                        "check_null": ast.create_definitions[i].nullable,
+                    })
+                }
+                var ss_ast = {
+                    function: 'create_table',
+                    table_name: ast.table[0].table,
+                    columns: columns
+                }
+                return ss_ast
         }
-        // return ss_ast;1
+    }
+    select(ast) {
+        var column;
+        var where;
+        if (ast.columns == '*') {
+            column = '*'
+        }
+        else {
+            column = [];
+            for (var i = 0; i < ast.columns.length; i++) {
+                column.push(ast.columns[i].expr.column)
+            }
+        }
+
+        if (ast.where == null) {
+            where = null;
+        }
+        else if (ast.where.type == 'binary_expr') {
+            var a = [];
+            if (ast.where.right.type != 'column_ref') {
+                a = [ast.where.right.value]
+            }
+            else {
+                a = [ast.where.right.table, ast.where.right.column]
+            }
+            where = {
+                operator: ast.where.operator,
+                left: [ast.where.left.table, ast.where.left.column],
+                right: a
+            }
+        }
+        else if (ast.where.type == 'function') {
+            var value_exist = [];
+            for (var i = 0; i < ast.where.args.value.length; i++) {
+                value_exist.push({
+                    "operator": ast.where.args.value[i].operator,
+                    "left": [ast.where.args.value[i].left.table, ast.where.args.value[i].left.column],
+                    "right": [ast.where.args.value[i].right.table, ast.where.args.value[i].right.column],
+                });
+            }
+            where = {
+                exist: true,
+                values: value_exist
+            }
+        }
+        else {
+            where = select_where(ast.where)
+        }
+        ss_ast = {
+            function: 'select_value',
+            columns: column,
+            table: ast.from[0].table,
+            where: where,
+            orderby: null,
+            groupby: null
+        }
+        if (ast._next != undefined) {
+            next_query = this.select(ast._next);
+            ss_ast['next'] = next_query;
+        }
+
+        return ss_ast;
+    }
+    drop(ast) {
+        ss_ast = {
+            function: 'drop_table',
+            table_name: ast.name.table
+        }
+        return ss_ast
+    }
+    delete(ast) {
+        var table = ast.table[0].table;
+        var where;
+        var from = ast.from[0].table;
+        var column;
+        if (ast.columns == '*') {
+            column = '*'
+        }
+        else {
+            column = [];
+            for (var i = 0; i < ast.columns.length; i++) {
+                column.push(ast.columns[i].expr.column)
+            }
+        }
+
+        if (ast.where == null) {
+            where = null;
+        }
+        else if (ast.where.type == 'binary_expr') {
+            var a = [];
+            if (ast.where.right.type != 'column_ref') {
+                a = [ast.where.right.value]
+            }
+            else {
+                a = [ast.where.right.table, ast.where.right.column]
+            }
+            where = {
+                operator: ast.where.operator,
+                left: [ast.where.left.table, ast.where.left.column],
+                right: a
+            }
+        }
+        else if (ast.where.type == 'function') {
+            var value_exist = [];
+            for (var i = 0; i < ast.where.args.value.length; i++) {
+                value_exist.push({
+                    "operator": ast.where.args.value[i].operator,
+                    "left": [ast.where.args.value[i].left.table, ast.where.args.value[i].left.column],
+                    "right": [ast.where.args.value[i].right.table, ast.where.args.value[i].right.column],
+                });
+            }
+            where = {
+                exist: true,
+                values: value_exist
+            }
+        }
+        else {
+            where = select_where(ast.where)
+        }
+        ss_ast = {
+            function: 'delete_row',
+            table: table,
+            from: from,
+            where: where,
+        }
+        return ss_ast
+    }
+    update(ast) {
+        var table = ast.table[0].table;
+        var set = []
+        for (var i = 0; i < ast.set.length; i++) {
+            set.push({
+                "column ": ast.set[i].column,
+                "value": ast.set[i].value.value
+            })
+        }
+        var where;
+
+        if (ast.where == null) {
+            where = null;
+        }
+        else if (ast.where.type == 'binary_expr') {
+            var a = [];
+            if (ast.where.right.type != 'column_ref') {
+                a = [ast.where.right.value]
+            }
+            else {
+                a = [ast.where.right.table, ast.where.right.column]
+            }
+            where = {
+                operator: ast.where.operator,
+                left: [ast.where.left.table, ast.where.left.column],
+                right: a
+            }
+        }
+        else if (ast.where.type == 'function') {
+            var value_exist = [];
+            for (var i = 0; i < ast.where.args.value.length; i++) {
+                value_exist.push({
+                    "operator": ast.where.args.value[i].operator,
+                    "left": [ast.where.args.value[i].left.table, ast.where.args.value[i].left.column],
+                    "right": [ast.where.args.value[i].right.table, ast.where.args.value[i].right.column],
+                });
+            }
+            where = {
+                exist: true,
+                values: value_exist
+            }
+        }
+        else {
+            where = select_where(ast.where)
+        }
+        ss_ast = {
+            function: 'update_table',
+            table: table,
+            set: set,
+            where: where,
+        }
+        return ss_ast
     }
 }
 // console.log(selectast3)
-translator = new Translator(insertast)
+translator = new Translator();
+console.log(translator.create(createast));
 // translator.transalating(this.ast)
  // mysql sql grammer parsed by default
