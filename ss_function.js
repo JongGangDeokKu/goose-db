@@ -1,12 +1,15 @@
 class GooseDB {
-    constructor(google, key, sheetId) {
+    constructor(google, key) {
         this.google = google;
         this.key = key;
-        this.sheetId = sheetId;
+        this.sheetId = null;
         this.client = null;
         this.connected = false;
     }
     async connect() {
+        const chalk = require('chalk');
+        const figlet = require('figlet');
+
         this.client = new this.google.auth.JWT(
             this.key.client_email,
             null,
@@ -17,16 +20,25 @@ class GooseDB {
             ]
         );
         this.api = this.google.sheets({ version: "v4", auth: this.client });
-        this.client.authorize((err, tokens) => {
-            if (err) {
-                console.log(err);
-                return;
-            } else {
-                this.connected = true;
-                console.log("Connect!");
-            }
+        const result = await new Promise((resolve) => {
+            this.client.authorize((err, tokens) => {
+                if (err) {
+                    console.log(err);
+                    resolve(false);
+                } else {
+                    console.log(
+                        chalk.cyanBright(
+                            figlet.textSync('Goose DB', { horizontalLayout: 'full' })
+                        )
+                    );
+                    resolve(true);
+                }
+            });
+
         });
+        this.connected = result;
     }
+
     async query(sql, type) {
         let result = null;
         switch (type) {
@@ -48,6 +60,9 @@ class GooseDB {
     }
     setSheetId(sheetId) {
         this.sheetId = sheetId;
+    }
+    setKey(key) {
+        this.key = key;
     }
     async select(table, sql) {
         const selectQuery = [[`=QUERY(${table}!A1:N, "${sql}")`]];
@@ -100,11 +115,12 @@ class GooseDB {
             rl.on("line", (line) => {
                 if (email_re.test(line)) {
                     console.log("Get Correct e-mail");
-                    resolve(line);
-                    const data = JSON.parse(fs.readFileSync("key.json"));
+                    const data = JSON.parse(fs.readFileSync("credentials.json"));
                     data.editor_email = [line];
-                    fs.writeFileSync("key.json", JSON.stringify(data));
+                    fs.writeFileSync("credentials.json", JSON.stringify(data));
+                    this.setKey(require("./credentials.json"));
                     rl.close();
+                    resolve(line);
                 } else {
                     console.log(
                         "ERR:: Not e-mail regular expression\nPlease input again!"
@@ -119,7 +135,7 @@ class GooseDB {
             spreadsheetId: this.sheetId,
             range: `${tableName}!A1`,
             valueInputOption: "USER_ENTERED",
-            resource:  {values: [columns] }
+            resource: { values: [columns] }
         }
         const res = await this.api.spreadsheets.values.update(request);
         return res;
@@ -151,16 +167,24 @@ class GooseDB {
             resource: {
                 properties: {
                     title: dbName
-                }
+                },
+                sheets: [
+                    {
+                        properties: {
+                            title: 'select table'
+                        }
+                    }
+                ]
             }
         };
         if (this.key.hasOwnProperty("editor_email")) {
             console.log("You can access in " + this.key.editor_email);
-        } else initEmail();
+        } else await this.initEmail();
         const res = await this.api.spreadsheets.create(request);
         const fileId = res.data.spreadsheetId;
         this.setSheetId(fileId);
         const drive = this.google.drive({ version: "v3", auth: this.client });
+        console.log(this.key.editor_email);
         this.key.editor_email.forEach(async (email) => {
             await drive.permissions.create({
                 resource: {
@@ -174,8 +198,8 @@ class GooseDB {
         });
         console.log(
             "You can access sheet : https://docs.google.com/spreadsheets/d/" +
-                fileId +
-                "/edit"
+            fileId +
+            "/edit"
         );
         return fileId;
     }
@@ -184,9 +208,11 @@ class GooseDB {
 const main = async () => {
     const { google } = require("googleapis");
     const key = require("./credentials.json");
-    const gooseDB = new GooseDB(google, key, "10IS-ubZe0MAW7yMvQlZzZmoiQ5Amyapq2RE3azWWMqQ");
-    const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
+    // if (this.key.hasOwnProperty("editor_email")) {
+    const gooseDB = new GooseDB(google, key);
+    // const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
     await gooseDB.connect();
+    await gooseDB.createDB("TEST");
     // const result = await gooseDB.query(sql, 0); // SELECT : 쿼리로 입력받고 translate 한거 그대로 넣어주면 됨
     // const result = await gooseDB.query([11, "new", "new", "new"], 1); // UPDATE : 쿼리로 입력받고 내부에서 VALUE를 배열로 넘겨줌
     // const sheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨

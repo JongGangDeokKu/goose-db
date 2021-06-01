@@ -41,7 +41,7 @@ async function initEmail() {
             if (email_re.test(line)) {
                 console.log("Get Correct e-mail");
                 resolve(line);
-                const data = JSON.parse(fs.readFileSync("key.json"));
+                const data = JSON.parse(fs.readFileSync("credentials.json"));
                 data.editor_email = [line];
                 fs.writeFileSync("key.json", JSON.stringify(data));
                 rl.close();
@@ -179,7 +179,7 @@ async function CREATE_DATABASE(client_user, db_name) {
     };
     if (key.hasOwnProperty("editor_email")) {
         console.log("You can access in " + key.editor_email);
-    } else initEmail();
+    } else await initEmail();
     const res_ss = await api.spreadsheets.create(request);
     const fileId = res_ss.data.spreadsheetId;
     // Give permission
