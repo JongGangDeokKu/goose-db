@@ -8,10 +8,10 @@ function parse(syntax) {
     let drop_db_re = /drop(\s*)database(\s*)\w(;?)/i
     
     if (commit_re.test(syntax)){
-        console.log('commit!!');
+        console.log('commit syntax is not yet.');
     }
     else if (rollback_re.test(syntax)) {
-        console.log('rollback!!');
+        console.log('rollback syntax is not yet.');
     }
     else if (drop_db_re.test(syntax)) {
         let db_name = (syntax.replace(/drop(\s*)database(\s*)/i, "")).replace(/(\s)/, "").replace(/;/, "");

@@ -1,103 +1,34 @@
-const readline = require('readline');
-const chalk = require('chalk');
-const figlet = require('figlet');
-const { Parser } = require('node-sql-parser');
+/* */
+const main = async () => {
 
-async function main() {
-    sql = await new Promise(() => {
-        console.log(
-            chalk.cyanBright(
-                figlet.textSync('Goose DB', { horizontalLayout: 'full' })
-            )
-        );
-        command();
-    });
-}
+    const sql = "CREATE DATABASE TEST";
+    // const sql = "DROP DATABASE TEST";
+    // const sql = "";
+    // const sql = "SELECT * FROM student";
 
-function command() {
-    let parser = new Parser();
-    let rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    rl.setPrompt('gooseDB > ');
-    rl.prompt();
-    rl.on('line', (line) => {
-        try {
-            let commit_re = /commit(\s*)(;?)/i
-            let rollback_re = /rollback(\s*)(;?)/i
-            if (commit_re.test(line)){
-                console.log('commit!!');
-                rl.close();
-            }
-            else if (rollback_re.test(line)) {
-                console.log('rollback!!');
-                rl.close();
-            }
-            else {
-                const ast = parser.astify(line);
-                switch (ast.type) {
-                    case 'create':
-                        switch (ast.keyword) {
-                            case 'database':
-                                console.log("complete");
-                                console.log(ast);
-                                const database = ast.database;
-                                rl.close();
-                                break;
-                            case 'table':
-                                console.log("complete");
-                                // console.log(ast);
-                                for (var i in ast.table) {
-                                    console.log(ast.table[i].table);
-                                }
-                                for (var i in ast.create_definitions) {
-                                    console.log(ast.create_definitions[i].column);
-                                    console.log(ast.create_definitions[i].definition);
-                                    console.log(ast.create_definitions[i].nullable);
-                                }
-                                rl.close();
-                                break;
-                        }
-                        break;
-    
-                    case 'select':
-                        console.log("select!!!");
-                        console.log(ast);
-                        rl.close();
-                        break;
-    
-                    case 'drop':
-                        console.log("drop!!!");
-                        console.log(ast);
-                        rl.close();
-                        break;
-    
-                    case 'delete':
-                        console.log("delete!!!");
-                        console.log(ast);
-                        rl.close();
-                        break;
-    
-                    case 'update':
-                        console.log("update!!!");
-                        console.log(ast);
-                        rl.close();
-                        break;
-    
-                    default:
-                        rl.close();
-                        console.log(ast);
-                        break;
-                }
-            }
-        }
-        catch (err) {
-            console.log("ERR:: Syntax error / SQL\n");
-            rl.close();
-        }
-        command();
-    });
+    const { Parse } = require("./parser");
+    sqlAst = Parse(sql);
+
+    const { Translator } = require("./translator");
+    const translator = new Translator(sqlAst);
+    const ssAst = translator.translate();
+
+    console.log(ssAst);
+
+    const { GooseDB } = require("./ss_function");
+    const { google } = require("googleapis");
+    const key = require("./credentials.json");
+    const gooseDB = new GooseDB(google, key, 'spreadsheetID');
+
+    // const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
+    await gooseDB.connect();
+    await gooseDB.createDB("TEST");
+    // await gooseDB.dropDB('TEST');
+    // const result = await gooseDB.query(sql, 0); // SELECT : 쿼리로 입력받고 translate 한거 그대로 넣어주면 됨
+    // const result = await gooseDB.query([11, "new", "new", "new"], 1); // UPDATE : 쿼리로 입력받고 내부에서 VALUE를 배열로 넘겨줌
+    // const spreadsheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨
+    // const result = await gooseDB.query(["c1", "c2", "c3", "c4"], 3); // CREATE TABLE AND COLUMN : 쿼리로 입력받고 테이블 명, 컬럼명 뽑아서 넣어주면 됨
+    // console.log(result);
 }
 
 main();
