@@ -38,7 +38,22 @@ class GooseDB {
         });
         this.connected = result;
     }
-
+    async getSheets(){
+        const request = {
+            spreadsheetId: this.spreadsheetId,
+            ranges: [],
+            includeGridData: false,
+            auth: this.client,
+          };
+        
+          try {
+            const response = (await this.api.spreadsheets.get(request)).data.sheets;
+            console.log(JSON.stringify(response, null, 2));
+            return JSON.stringify(response, null, 2);
+          } catch (err) {
+            console.error(err);
+          }
+    }
     async query(sql, type) {
         let result = null;
         switch (type) {
@@ -162,6 +177,20 @@ class GooseDB {
         }
         return res;
     }
+    async dropTable(tableName) {
+        const request = {
+            spreadsheetId: this.spreadsheetId,
+            requestBody: {
+                requests: [
+                {
+                    deleteSheet: {
+                        sheetId: sheetId
+                    }
+                }
+                ]
+            }
+        }
+    }
     async createDB(dbName) {
         const request = {
             resource: {
@@ -183,7 +212,7 @@ class GooseDB {
         else {
             console.log("You must have e-mail address for accessing database!");
             await this.initEmail();
-            
+
         }
 
         const res = await this.api.spreadsheets.create(request);
@@ -214,10 +243,11 @@ const main = async () => {
     const { google } = require("googleapis");
     const key = require("./credentials.json");
     // if (this.key.hasOwnProperty("editor_email")) {
-    const gooseDB = new GooseDB(google, key);
+    const gooseDB = new GooseDB(google, key, 'ssid');
     // const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
     await gooseDB.connect();
-    await gooseDB.createDB("TEST");
+    // await gooseDB.createDB("TEST");
+    await gooseDB.getSheets();
     // const result = await gooseDB.query(sql, 0); // SELECT : 쿼리로 입력받고 translate 한거 그대로 넣어주면 됨
     // const result = await gooseDB.query([11, "new", "new", "new"], 1); // UPDATE : 쿼리로 입력받고 내부에서 VALUE를 배열로 넘겨줌
     // const spreadsheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨
