@@ -1,24 +1,22 @@
-const { Parser } = require('node-sql-parser');
-// const { validate } = require('mysql-query-validator')
-const parser = new Parser();
+const { Parse } = require("./parser");
 
 // ---------------------------- AST ------------------------------------------
-const selectast = parser.astify("SELECT * FROM student");
-const selectast2 = parser.astify("SELECT * FROM student WHERE A.A = 1");
-const selectast3 = parser.astify("SELECT * FROM student WHERE (SELECT A FROM B WHERE (SELECT B FROM C))")
-const insertast = parser.astify("insert into usertbl (a,b,c) values ('덕배 `바보` `똥개`', 2, 'db2', '010-1234-5678', '감기')");
-const createast = parser.astify('CREATE DATABASE Hotel');
-const createast2 = parser.astify("CREATE TABLE Test (ID INT, Name VARCHAR(30), ReserveDate DATE,RoomNum INT NOT NULL)");
-const dropast = parser.astify('drop table a');
-const deleteast = parser.astify("DELETE FROM Reservation as A WHERE A.A = B.B")
-const deleteast2 = parser.astify('DELETE FROM Reservation as A WHERE SELECT A FROM B')
-const updateast = parser.astify("UPDATE Reservation SET RoomNum = 2002 WHERE Name = '홍길동'")
-const unionast = parser.astify("SELECT Name FROM Reservation UNION ALL SELECT Name FROM Customer")
-const unionast2 = parser.astify("SELECT Name FROM Reservation UNION SELECT Name FROM Customer")
-const existast = parser.astify("SELECT A FROM B WHERE EXIST (A.A = 1)")
-const existast2 = parser.astify("UPDATE Reservation SET RoomNum = 2002 WHERE EXIST (Name = '홍길동')")
-const existast3 = parser.astify("DELETE FROM Reservation as A WHERE EXISTS (SELECT A FROM B)")
-// console.log("SELECT * FROM student".split(' '))
+const selectast = Parse("SELECT * FROM student");
+const selectast2 = Parse("SELECT * FROM student WHERE A.A = 1");
+const selectast3 = Parse("SELECT * FROM student WHERE (SELECT A FROM B WHERE (SELECT B FROM C))")
+const insertast = Parse("insert into usertbl (a,b,c) values ('db2', '010-1234-5678', '감기')");
+const createast = Parse('CREATE DATABASE Hotel');
+const createast2 = Parse("CREATE TABLE Test (ID INT, Name VARCHAR(30), ReserveDate DATE,RoomNum INT NOT NULL)");
+const dropast = Parse('drop table a');
+const deleteast = Parse("DELETE FROM Reservation as A WHERE A.A = B.B")
+const deleteast2 = Parse('DELETE FROM Reservation as A WHERE SELECT A FROM B')
+const updateast = Parse("UPDATE Reservation SET RoomNum = 2002 WHERE Name = '홍길동'")
+const unionast = Parse("SELECT Name FROM Reservation UNION ALL SELECT Name FROM Customer")
+const unionast2 = Parse("SELECT Name FROM Reservation UNION SELECT Name FROM Customer")
+const existast = Parse("SELECT A FROM B WHERE EXIST (A.A = 1)")
+const existast2 = Parse("UPDATE Reservation SET RoomNum = 2002 WHERE EXIST (Name = '홍길동')")
+const existast3 = Parse("DELETE FROM Reservation as A WHERE EXISTS (SELECT A FROM B)")
+console.log("SELECT * FROM student".split(' '))
 // ---------------------------- AST ARRAY -------------------------------------
 const CREATEAST_ARRAY = [createast, createast2];
 const SELECTAST_ARRAY = [selectast, selectast2, selectast3];
@@ -48,11 +46,11 @@ class Translator {
             var where_colunms = ast.columns;
             var where_from = ast.from[0];
             ss_ast = {
-                select: where_select,
+                type: 'select_value',
                 distinct: where_distinct,
                 columns: where_colunms,
                 from: where_from,
-                where: select_where(ast.where),
+                where: this.select_where(ast.where),
             }
             return ss_ast;
         }
@@ -147,9 +145,9 @@ class Translator {
             }
         }
         else {
-            where = select_where(ast.where)
+            where = this.select_where(ast.where)
         }
-        ss_ast = {
+        let ss_ast = {
             function: 'select_value',
             columns: column,
             table: ast.from[0].table,
@@ -158,14 +156,15 @@ class Translator {
             groupby: null
         }
         if (ast._next != undefined) {
-            next_query = this.select(ast._next);
+            let next_query = this.select(ast._next);
             ss_ast['next'] = next_query;
+            ss_ast['union'] = ast.union
         }
 
         return ss_ast;
     }
     drop(ast) {
-        ss_ast = {
+        let ss_ast = {
             function: 'drop_table',
             table_name: ast.name.table
         }
@@ -175,17 +174,7 @@ class Translator {
         var table = ast.table[0].table;
         var where;
         var from = ast.from[0].table;
-        var column;
-        if (ast.columns == '*') {
-            column = '*'
-        }
-        else {
-            column = [];
-            for (var i = 0; i < ast.columns.length; i++) {
-                column.push(ast.columns[i].expr.column)
-            }
-        }
-
+        console.log(ast)
         if (ast.where == null) {
             where = null;
         }
@@ -203,24 +192,18 @@ class Translator {
                 right: a
             }
         }
-        else if (ast.where.type == 'function') {
-            var value_exist = [];
-            for (var i = 0; i < ast.where.args.value.length; i++) {
-                value_exist.push({
-                    "operator": ast.where.args.value[i].operator,
-                    "left": [ast.where.args.value[i].left.table, ast.where.args.value[i].left.column],
-                    "right": [ast.where.args.value[i].right.table, ast.where.args.value[i].right.column],
-                });
-            }
+        else if (ast.where.type == 'unary_expr') {
+            let exist_ast = this.select_where(ast.where.expr.ast);
+            console.log(exist_ast)
             where = {
                 exist: true,
-                values: value_exist
+                ast : exist_ast
             }
         }
         else {
-            where = select_where(ast.where)
+            where = this.select_where(ast.where)
         }
-        ss_ast = {
+        let ss_ast = {
             function: 'delete_row',
             table: table,
             from: from,
@@ -271,9 +254,9 @@ class Translator {
             }
         }
         else {
-            where = select_where(ast.where)
+            where = this.select_where(ast.where)
         }
-        ss_ast = {
+        let ss_ast = {
             function: 'update_table',
             table: table,
             set: set,
@@ -282,8 +265,8 @@ class Translator {
         return ss_ast
     }
 }
-// console.log(selectast3)
+
 translator = new Translator();
-console.log(translator.create(createast));
-// translator.transalating(this.ast)
- // mysql sql grammer parsed by default
+console.log(translator.delete(existast3));
+
+module.exports.Translator = Translator;
