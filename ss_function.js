@@ -47,9 +47,7 @@ class GooseDB {
           };
         
           try {
-            const response = (await this.api.spreadsheets.get(request)).data.sheets;
-            console.log(JSON.stringify(response, null, 2));
-            return JSON.stringify(response, null, 2);
+            return (await this.api.spreadsheets.get(request)).data.sheets;
           } catch (err) {
             console.error(err);
           }
@@ -178,17 +176,41 @@ class GooseDB {
         return res;
     }
     async dropTable(tableName) {
-        const request = {
-            spreadsheetId: this.spreadsheetId,
-            requestBody: {
-                requests: [
-                {
-                    deleteSheet: {
-                        sheetId: sheetId
+        async function getSheetId(sheets) {
+            try {
+                for (var i = 0; i < sheets.length; i++) {
+                    if (sheets[i].properties.title == tableName) {
+                        return sheets[i].properties.sheetId;
                     }
                 }
-                ]
+                throw err;
             }
+            catch(err) {
+                console.log("ERR:: (DROP TABLE) Invalid table name at spreadsheet!")
+            }
+        }
+        const sheets = await this.getSheets();
+        const sheetId = await getSheetId(sheets);
+        if (sheetId == null) { return; }
+        try {
+            const request = {
+                spreadsheetId: this.spreadsheetId,
+                requestBody: {
+                    requests: [
+                    {
+                        deleteSheet: {
+                            sheetId: sheetId
+                        }
+                    }
+                    ]
+                }
+            };
+            const res = await this.api.spreadsheets.batchUpdate(request);
+            console.log("DROP TABLE completed successfully.")
+            return res;
+        }
+        catch (err) {
+            console.log(err);
         }
     }
     async createDB(dbName) {
@@ -243,11 +265,11 @@ const main = async () => {
     const { google } = require("googleapis");
     const key = require("./credentials.json");
     // if (this.key.hasOwnProperty("editor_email")) {
-    const gooseDB = new GooseDB(google, key, 'ssid');
+    const gooseDB = new GooseDB(google, key, 'spreadsheetId');
     // const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
     await gooseDB.connect();
     // await gooseDB.createDB("TEST");
-    await gooseDB.getSheets();
+    await gooseDB.dropTable('kk');
     // const result = await gooseDB.query(sql, 0); // SELECT : 쿼리로 입력받고 translate 한거 그대로 넣어주면 됨
     // const result = await gooseDB.query([11, "new", "new", "new"], 1); // UPDATE : 쿼리로 입력받고 내부에서 VALUE를 배열로 넘겨줌
     // const spreadsheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨
