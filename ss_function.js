@@ -273,7 +273,9 @@ class GooseDB {
 /* */
 const main = async () => {
 
-    const sql = "CREATE DATABASE TEST"
+    // const sql = "CREATE DATABASE TEST";
+    const sql = "DROP DATABASE TEST";
+    // const sql = "SELECT * FROM student";
 
     const { Parse } = require("./parser");
     sqlAst = Parse(sql);
@@ -282,9 +284,11 @@ const main = async () => {
     const translator = new Translator(sqlAst);
     const ssAst = translator.translate();
 
-    const { google } = require("googleapis");
-    const key = require("./credentials.json");
-    const gooseDB = new GooseDB(google, key, 'spreadsheetID');
+    console.log(ssAst);
+
+    // const { google } = require("googleapis");
+    // const key = require("./credentials.json");
+    // const gooseDB = new GooseDB(google, key, 'spreadsheetID');
 
     // const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
     // await gooseDB.connect();
@@ -297,3 +301,5 @@ const main = async () => {
     // console.log(result);
 }
 main();
+
+module.exports.GooseDB = GooseDB;

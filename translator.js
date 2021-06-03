@@ -44,7 +44,6 @@ class Translator {
         try {
             switch(this.sqlAst.type) {
                 case "create":
-                    console.log(this.create(this.sqlAst));
                     return this.create(this.sqlAst);
                 case "drop":
                     return this.drop(this.sqlAst);
@@ -188,9 +187,20 @@ class Translator {
         return ss_ast;
     }
     drop(ast) {
-        let ss_ast = {
-            function: 'drop_table',
-            table_name: ast.name.table
+        let ss_ast = null;
+        switch (ast.keyword) {
+            case "database":
+                ss_ast = {
+                    function: 'drop_database',
+                    db_name: ast.name.db
+                }
+                break;
+            case "table":
+                ss_ast = {
+                    function: 'drop_table',
+                    table_name: ast.name.table
+                }
+                break;
         }
         return ss_ast
     }
