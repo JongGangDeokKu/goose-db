@@ -1,8 +1,8 @@
 class GooseDB {
-    constructor(google, key) {
+    constructor(google, key, spreadsheetId) {
         this.google = google;
         this.key = key;
-        this.sheetId = null;
+        this.spreadsheetId = spreadsheetId;
         this.client = null;
         this.connected = false;
     }
@@ -58,8 +58,8 @@ class GooseDB {
         }
         return result;
     }
-    setSheetId(sheetId) {
-        this.sheetId = sheetId;
+    setSpreadsheetId(spreadsheetId) {
+        this.spreadsheetId = spreadsheetId;
     }
     setKey(key) {
         this.key = key;
@@ -67,17 +67,17 @@ class GooseDB {
     async select(table, sql) {
         const selectQuery = [[`=QUERY(${table}!A1:N, "${sql}")`]];
         const updateRequest = {
-            spreadsheetId: this.sheetId,
+            spreadsheetId: this.spreadsheetId,
             range: "A1",
             valueInputOption: "USER_ENTERED",
             resource: { values: selectQuery },
         }
         const selectRequest = {
-            spreadsheetId: this.sheetId,
+            spreadsheetId: this.spreadsheetId,
             range: "A1:N",
         };
         const deleteRequest = {
-            spreadsheetId: this.sheetId,
+            spreadsheetId: this.spreadsheetId,
             range: "A1:N",
         };
         await this.api.spreadsheets.values.update(updateRequest);
@@ -87,7 +87,7 @@ class GooseDB {
     }
     async insert(table, data) {
         const request = {
-            spreadsheetId: this.sheetId,
+            spreadsheetId: this.spreadsheetId,
             range: `${table}!A1`,
             valueInputOption: "RAW",
             insertDataOption: "INSERT_ROWS",
@@ -109,16 +109,16 @@ class GooseDB {
                 input: process.stdin,
                 output: process.stdout,
             });
-            console.log("Input your e-mail address");
+            console.log("Input your e-mail address!");
             rl.setPrompt("> ");
             rl.prompt();
             rl.on("line", (line) => {
                 if (email_re.test(line)) {
-                    console.log("Get Correct e-mail");
+                    console.log("\nGet Correct e-mail!\n");
                     const data = JSON.parse(fs.readFileSync("credentials.json"));
                     data.editor_email = [line];
                     fs.writeFileSync("credentials.json", JSON.stringify(data));
-                    this.setKey(require("./credentials.json"));
+                    this.setKey(data);
                     rl.close();
                     resolve(line);
                 } else {
@@ -132,7 +132,7 @@ class GooseDB {
     }
     async addColumn(tableName, columns) {
         const request = {
-            spreadsheetId: this.sheetId,
+            spreadsheetId: this.spreadsheetId,
             range: `${tableName}!A1`,
             valueInputOption: "USER_ENTERED",
             resource: { values: [columns] }
@@ -142,7 +142,7 @@ class GooseDB {
     }
     async createTable(tableName, columns) {
         const request = {
-            spreadsheetId: this.sheetId,
+            spreadsheetId: this.spreadsheetId,
             requestBody: {
                 requests: [
                     {
@@ -179,12 +179,17 @@ class GooseDB {
         };
         if (this.key.hasOwnProperty("editor_email")) {
             console.log("You can access in " + this.key.editor_email);
-        } else await this.initEmail();
+        }
+        else {
+            console.log("You must have e-mail address for accessing database!");
+            await this.initEmail();
+            
+        }
+
         const res = await this.api.spreadsheets.create(request);
         const fileId = res.data.spreadsheetId;
-        this.setSheetId(fileId);
+        this.setSpreadsheetId(fileId);
         const drive = this.google.drive({ version: "v3", auth: this.client });
-        console.log(this.key.editor_email);
         this.key.editor_email.forEach(async (email) => {
             await drive.permissions.create({
                 resource: {
@@ -201,7 +206,7 @@ class GooseDB {
             fileId +
             "/edit"
         );
-        return fileId;
+        return;
     }
 }
 /* */
@@ -215,7 +220,7 @@ const main = async () => {
     await gooseDB.createDB("TEST");
     // const result = await gooseDB.query(sql, 0); // SELECT : 쿼리로 입력받고 translate 한거 그대로 넣어주면 됨
     // const result = await gooseDB.query([11, "new", "new", "new"], 1); // UPDATE : 쿼리로 입력받고 내부에서 VALUE를 배열로 넘겨줌
-    // const sheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨
+    // const spreadsheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨
     // const result = await gooseDB.query(["c1", "c2", "c3", "c4"], 3); // CREATE TABLE AND COLUMN : 쿼리로 입력받고 테이블 명, 컬럼명 뽑아서 넣어주면 됨
     // console.log(result);
 }
