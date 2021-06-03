@@ -1,3 +1,4 @@
+const { sql } = require("googleapis/build/src/apis/sql");
 const { Parse } = require("./parser");
 
 // ---------------------------- AST ------------------------------------------
@@ -16,7 +17,7 @@ const unionast2 = Parse("SELECT Name FROM Reservation UNION SELECT Name FROM Cus
 const existast = Parse("SELECT A FROM B WHERE EXIST (A.A = 1)")
 const existast2 = Parse("UPDATE Reservation SET RoomNum = 2002 WHERE EXIST (Name = '홍길동')")
 const existast3 = Parse("DELETE FROM Reservation as A WHERE EXISTS (SELECT A FROM B)")
-console.log("SELECT * FROM student".split(' '))
+// console.log("SELECT * FROM student".split(' '))
 // ---------------------------- AST ARRAY -------------------------------------
 const CREATEAST_ARRAY = [createast, createast2];
 const SELECTAST_ARRAY = [selectast, selectast2, selectast3];
@@ -34,6 +35,29 @@ const SETAST_ARRAY = [updateast]
 // ------------------------------AST TYPE --------------------------------------
 
 class Translator {
+
+    constructor(sqlAst) {
+        this.sqlAst = sqlAst;
+    }
+
+    translate() {
+        try {
+            switch(this.sqlAst.type) {
+                case "create":
+                    console.log(this.create(this.sqlAst));
+                    return this.create(this.sqlAst);
+                case "drop":
+                    return this.drop(this.sqlAst);
+                case "delete":
+                    return this.delete(this.sqlAst);
+                case "update":
+                    return this.update(this.sqlAst);
+            }
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
 
     select_where(ast) {
         var ss_ast;
@@ -174,7 +198,7 @@ class Translator {
         var table = ast.table[0].table;
         var where;
         var from = ast.from[0].table;
-        console.log(ast)
+        // console.log(ast)
         if (ast.where == null) {
             where = null;
         }
@@ -194,7 +218,7 @@ class Translator {
         }
         else if (ast.where.type == 'unary_expr') {
             let exist_ast = this.select_where(ast.where.expr.ast);
-            console.log(exist_ast)
+            // console.log(exist_ast)
             where = {
                 exist: true,
                 ast : exist_ast
@@ -267,6 +291,6 @@ class Translator {
 }
 
 translator = new Translator();
-console.log(translator.delete(existast3));
+// console.log(translator.delete(existast3));
 
 module.exports.Translator = Translator;
