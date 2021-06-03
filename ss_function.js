@@ -52,6 +52,137 @@ class GooseDB {
             console.error(err);
           }
     }
+    setSpreadsheetId(spreadsheetId) {
+        this.spreadsheetId = spreadsheetId;
+    }
+    setKey(key) {
+        this.key = key;
+    }
+    async createDB(dbName) {
+        const request = {
+            resource: {
+                properties: {
+                    title: dbName
+                },
+                sheets: [
+                    {
+                        properties: {
+                            title: 'select table'
+                        }
+                    }
+                ]
+            }
+        };
+        if (this.key.hasOwnProperty("editor_email")) {
+            console.log("You can access in " + this.key.editor_email);
+        }
+        else {
+            console.log("You must have e-mail address for accessing database!");
+            await this.initEmail();
+
+        }
+
+        const res = await this.api.spreadsheets.create(request);
+        const fileId = res.data.spreadsheetId;
+        this.setSpreadsheetId(fileId);
+        const drive = this.google.drive({ version: "v3", auth: this.client });
+        this.key.editor_email.forEach(async (email) => {
+            await drive.permissions.create({
+                resource: {
+                    type: "user",
+                    role: "writer",
+                    emailAddress: email,
+                },
+                fileId: fileId,
+                fields: "id",
+            });
+        });
+        console.log(
+            "You can access sheet : https://docs.google.com/spreadsheets/d/" +
+            fileId +
+            "/edit"
+        );
+        return;
+    }
+    async dropDB(dbName) {
+        const drive = await this.google.drive({ version: "v3", auth: this.client });
+        const res = await drive.files.delete({
+             fileId: this.spreadsheetId
+        })
+        console.log("DROP DATABASE completed successfully!");
+        this.setSpreadsheetId(null);
+
+    }
+    async createTable(tableName, columns) {
+        const request = {
+            spreadsheetId: this.spreadsheetId,
+            requestBody: {
+                requests: [
+                    {
+                        addSheet: {
+                            properties: {
+                                title: tableName,
+                            },
+                        },
+                    },
+                ],
+            },
+        };
+        const res = await this.api.spreadsheets.batchUpdate(request);
+        if (columns) {
+            const colRes = await this.addColumn(tableName, columns);
+            return colRes;
+        }
+        return res;
+    }
+    async dropTable(tableName) {
+        async function getSheetId(sheets) {
+            try {
+                for (var i = 0; i < sheets.length; i++) {
+                    if (sheets[i].properties.title == tableName) {
+                        return sheets[i].properties.sheetId;
+                    }
+                }
+                throw err;
+            }
+            catch(err) {
+                console.log("ERR:: (DROP TABLE) Invalid table name at spreadsheet!")
+            }
+        }
+        const sheets = await this.getSheets();
+        const sheetId = await getSheetId(sheets);
+        if (sheetId == null) { return; }
+        try {
+            const request = {
+                spreadsheetId: this.spreadsheetId,
+                requestBody: {
+                    requests: [
+                    {
+                        deleteSheet: {
+                            sheetId: sheetId
+                        }
+                    }
+                    ]
+                }
+            };
+            const res = await this.api.spreadsheets.batchUpdate(request);
+            console.log("DROP TABLE completed successfully!")
+            return res;
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    async addColumn(tableName, columns) {
+        const request = {
+            spreadsheetId: this.spreadsheetId,
+            range: `${tableName}!A1`,
+            valueInputOption: "USER_ENTERED",
+            resource: { values: [columns] }
+        }
+        const res = await this.api.spreadsheets.values.update(request);
+        return res;
+    }
     async query(sql, type) {
         let result = null;
         switch (type) {
@@ -70,12 +201,6 @@ class GooseDB {
                 break;
         }
         return result;
-    }
-    setSpreadsheetId(spreadsheetId) {
-        this.spreadsheetId = spreadsheetId;
-    }
-    setKey(key) {
-        this.key = key;
     }
     async select(table, sql) {
         const selectQuery = [[`=QUERY(${table}!A1:N, "${sql}")`]];
@@ -143,133 +268,18 @@ class GooseDB {
             });
         });
     }
-    async addColumn(tableName, columns) {
-        const request = {
-            spreadsheetId: this.spreadsheetId,
-            range: `${tableName}!A1`,
-            valueInputOption: "USER_ENTERED",
-            resource: { values: [columns] }
-        }
-        const res = await this.api.spreadsheets.values.update(request);
-        return res;
-    }
-    async createTable(tableName, columns) {
-        const request = {
-            spreadsheetId: this.spreadsheetId,
-            requestBody: {
-                requests: [
-                    {
-                        addSheet: {
-                            properties: {
-                                title: tableName,
-                            },
-                        },
-                    },
-                ],
-            },
-        };
-        const res = await this.api.spreadsheets.batchUpdate(request);
-        if (columns) {
-            const colRes = await this.addColumn(tableName, columns);
-            return colRes;
-        }
-        return res;
-    }
-    async dropTable(tableName) {
-        async function getSheetId(sheets) {
-            try {
-                for (var i = 0; i < sheets.length; i++) {
-                    if (sheets[i].properties.title == tableName) {
-                        return sheets[i].properties.sheetId;
-                    }
-                }
-                throw err;
-            }
-            catch(err) {
-                console.log("ERR:: (DROP TABLE) Invalid table name at spreadsheet!")
-            }
-        }
-        const sheets = await this.getSheets();
-        const sheetId = await getSheetId(sheets);
-        if (sheetId == null) { return; }
-        try {
-            const request = {
-                spreadsheetId: this.spreadsheetId,
-                requestBody: {
-                    requests: [
-                    {
-                        deleteSheet: {
-                            sheetId: sheetId
-                        }
-                    }
-                    ]
-                }
-            };
-            const res = await this.api.spreadsheets.batchUpdate(request);
-            console.log("DROP TABLE completed successfully.")
-            return res;
-        }
-        catch (err) {
-            console.log(err);
-        }
-    }
-    async createDB(dbName) {
-        const request = {
-            resource: {
-                properties: {
-                    title: dbName
-                },
-                sheets: [
-                    {
-                        properties: {
-                            title: 'select table'
-                        }
-                    }
-                ]
-            }
-        };
-        if (this.key.hasOwnProperty("editor_email")) {
-            console.log("You can access in " + this.key.editor_email);
-        }
-        else {
-            console.log("You must have e-mail address for accessing database!");
-            await this.initEmail();
-
-        }
-
-        const res = await this.api.spreadsheets.create(request);
-        const fileId = res.data.spreadsheetId;
-        this.setSpreadsheetId(fileId);
-        const drive = this.google.drive({ version: "v3", auth: this.client });
-        this.key.editor_email.forEach(async (email) => {
-            await drive.permissions.create({
-                resource: {
-                    type: "user",
-                    role: "writer",
-                    emailAddress: email,
-                },
-                fileId: fileId,
-                fields: "id",
-            });
-        });
-        console.log(
-            "You can access sheet : https://docs.google.com/spreadsheets/d/" +
-            fileId +
-            "/edit"
-        );
-        return;
-    }
 }
+
 /* */
 const main = async () => {
     const { google } = require("googleapis");
     const key = require("./credentials.json");
     // if (this.key.hasOwnProperty("editor_email")) {
-    const gooseDB = new GooseDB(google, key, 'spreadsheetId');
+    const gooseDB = new GooseDB(google, key, 'spreadsheetID');
     // const sql = "SELECT * WHERE A>0 AND D=1 ORDER BY C DESC";
     await gooseDB.connect();
     // await gooseDB.createDB("TEST");
-    await gooseDB.dropTable('kk');
+    await gooseDB.dropDB('TEST');
     // const result = await gooseDB.query(sql, 0); // SELECT : 쿼리로 입력받고 translate 한거 그대로 넣어주면 됨
     // const result = await gooseDB.query([11, "new", "new", "new"], 1); // UPDATE : 쿼리로 입력받고 내부에서 VALUE를 배열로 넘겨줌
     // const spreadsheetId = await gooseDB.query("NEW-TEST2", 2); // CREATE_DB : 쿼리로 입력받고 내부에서 데이터베이스 이름만 입력받으면 됨
