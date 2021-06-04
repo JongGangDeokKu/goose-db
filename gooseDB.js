@@ -1,9 +1,9 @@
-const { Parser } = require("node-sql-parser");
+const { Parser } = require("./parser");
 const { Translator } = require("./translator.js");
 
 class GooseDB {
     constructor() {
-        
+
         this.parser = new Parser();
         this.translator = new Translator();
 
@@ -14,8 +14,6 @@ class GooseDB {
         this.api = null;
         this.drive = null;
         this.connected = false;
-        this.tablesColumnInfo = new Object(); // 테이블 이름 : 테이블 컬럼명 을 값을 갖음
-        this.sheetIdInfo = new Object();
     }
 
     colNameConverter(sql, columnInfo) {
@@ -69,56 +67,44 @@ class GooseDB {
     }
 
     async getColumnInfo(tableName) {
-        if (this.tablesColumnInfo[tableName]) {
-            return this.tablesColumnInfo[tableName];
-        } else {
-            const asciiA = 65;
-            const columns = new Object();
+        const asciiA = 65;
+        const columns = new Object();
 
-            const request = {
-                spreadsheetId: this.spreadsheetId,
-                range: `${tableName}!A1:1`,
-            };
-            const {
-                data: { values },
-            } = await this.api.spreadsheets.values.get(request);
+        const request = {
+            spreadsheetId: this.spreadsheetId,
+            range: `${tableName}!A1:1`,
+        };
+        const {
+            data: { values },
+        } = await this.api.spreadsheets.values.get(request);
 
-            values[0].forEach((colName, idx) => {
-                const disit = parseInt(idx / 26);
-                const first =
-                    disit === 0 ? "" : String.fromCharCode(asciiA + disit - 1);
-                const last = String.fromCharCode((idx % 26) + asciiA);
-                columns[colName] = first + last;
-            });
+        values[0].forEach((colName, idx) => {
+            const disit = parseInt(idx / 26);
+            const first =
+                disit === 0 ? "" : String.fromCharCode(asciiA + disit - 1);
+            const last = String.fromCharCode((idx % 26) + asciiA);
+            columns[colName] = first + last;
+        });
 
-            this.tablesColumnInfo[tableName] = columns;
-            return columns;
-        }
+        return columns;
     }
 
     async getSheetId(tableName) {
-        if (this.sheetIdInfo[tableName]) {
-            return this.sheetIdInfo[tableName];
-        } else {
-            const request = {
-                spreadsheetId: this.spreadsheetId,
-            };
-            const res = await this.api.spreadsheets.get(request);
-            const sheets = res.data.sheets;
-            let findSheetId = null;
+        const request = {
+            spreadsheetId: this.spreadsheetId,
+        };
+        const res = await this.api.spreadsheets.get(request);
+        const sheets = res.data.sheets;
 
-            for (let i = 0; i < sheets.length; i++) {
-                const {
-                    properties: { title, sheetId },
-                } = sheets[i];
+        for (let i = 0; i < sheets.length; i++) {
+            const {
+                properties: { title, sheetId },
+            } = sheets[i];
 
-                this.sheetIdInfo[title] = sheetId;
-
-                if (title === tableName) findSheetId = sheetId;
-            }
-
-            return findSheetId;
+            if (title === tableName)
+                return sheetId;
         }
+        return null;
     }
 
     async connect(google, key, spreadsheetId = null) {
@@ -304,8 +290,8 @@ class GooseDB {
 
         console.log(
             "You can access sheet : https://docs.google.com/spreadsheets/d/" +
-                fileId +
-                "/edit"
+            fileId +
+            "/edit"
         );
 
         return fileId;

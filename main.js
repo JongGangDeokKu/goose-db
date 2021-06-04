@@ -2,7 +2,7 @@ const { GooseDB } = require("./gooseDB.js");
 
 const main = async () => {
     const { google } = require("googleapis");
-    const key = require("./keys.json");
+    const key = require("./credentials.json");
 
     const testSQL = {
         create_database: "CREATE DATABASE GooseDB",
@@ -26,18 +26,17 @@ const main = async () => {
 
     await gooseDB.connect(
         google,
-        key,
-        "1lrJKQG2fcOsiy5181pSUyRay24kLYHxb-95oomHs018"
+        key
     );
 
     // 데이터베이스 생성 쿼리
-    // await gooseDB.query(testSQL.create_database);
+    await gooseDB.query(testSQL.create_database);
 
     // 데이터베이스 삭제 쿼리
     // await gooseDB.query(testSQL.drop_database);
 
     // // 테이블 생성 쿼리
-    // await gooseDB.query(testSQL.create_table);
+    await gooseDB.query(testSQL.create_table);
 
     // 데이터 삽입 쿼리
     // for (let i = 0; i < testSQL.insert.length; i++) {
@@ -45,10 +44,10 @@ const main = async () => {
     // }
 
     // 데이터 삽입 쿼리 (배열)
-    // await gooseDB.query(testSQL.insert);
+    await gooseDB.query(testSQL.insert);
 
     // // SELECT 쿼리
-    console.log(await gooseDB.query(testSQL.select));
+    // console.log(await gooseDB.query(testSQL.select));
 
     // DELETE 쿼리
     // await gooseDB.query(testSQL.delete);
