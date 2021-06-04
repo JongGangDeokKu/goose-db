@@ -136,6 +136,7 @@ class GooseDB {
                             })
                         )
                     );
+                    console.log("\nConnect GooseDB successfully!\n");
                     resolve(true);
                 }
             });
@@ -266,9 +267,9 @@ class GooseDB {
         };
 
         if (this.key.hasOwnProperty("editor_email")) {
-            console.log("You can access in " + this.key.editor_email);
+            console.log("\nYou can access in " + this.key.editor_email);
         } else {
-            console.log("You must have e-mail address for accessing database!");
+            console.log("\nYou must have e-mail address for accessing database!");
             await this.initEmail();
         }
 
@@ -289,7 +290,7 @@ class GooseDB {
         });
 
         console.log(
-            "You can access sheet : https://docs.google.com/spreadsheets/d/" +
+            "\nCREATE DATABASE completed successfully!\nYou can access spreadsheet : https://docs.google.com/spreadsheets/d/" +
             fileId +
             "/edit"
         );
@@ -301,7 +302,7 @@ class GooseDB {
         const res = await this.drive.files.delete({
             fileId: spreadsheetId,
         });
-        console.log("DROP DATABASE completed successfully!");
+        console.log("\nDROP DATABASE completed successfully!");
         this.setSpreadsheetId(null);
 
         return res;
@@ -327,9 +328,11 @@ class GooseDB {
 
         if (columns) {
             const colRes = await this.addColumn(tableName, [null, ...columns]);
+            console.log("\nCREATE TABLE completed successfully!");
             return colRes;
         }
 
+        console.log("\nCREATE TABLE completed successfully! : column is not written.");
         return res;
     }
 
@@ -352,7 +355,7 @@ class GooseDB {
                 };
 
                 const res = await this.api.spreadsheets.batchUpdate(request);
-                console.log("DROP TABLE completed successfully!");
+                console.log("\nDROP TABLE completed successfully!");
                 return res;
             } catch (err) {
                 console.log(err);
@@ -371,6 +374,7 @@ class GooseDB {
         };
 
         const res = await this.api.spreadsheets.values.update(request);
+        console.log("\nADD COLUMN completed successfully!");
         return res;
     }
 
@@ -393,6 +397,7 @@ class GooseDB {
         await this.api.spreadsheets.values.update(updateRequest);
         const res = await this.api.spreadsheets.values.get(selectRequest);
 
+        console.log("\nSELECT completed successfully!\nYou can see data in spreadsheet.");
         return res.data.values;
     }
 
@@ -412,6 +417,7 @@ class GooseDB {
             },
         };
         const res = await this.api.spreadsheets.values.append(request);
+        console.log("\nINSERT completed successfully!\nYou can see data in spreadsheet.");
         return res;
     }
 
@@ -440,6 +446,7 @@ class GooseDB {
         };
 
         const res = await this.api.spreadsheets.batchUpdate(request);
+        console.log("\nDELETE completed successfully!\nYou can see data in spreadsheet.");
         return res;
     }
 
@@ -479,6 +486,7 @@ class GooseDB {
         };
 
         const res = await this.api.spreadsheets.batchUpdate(request);
+        console.log("\nDELETE completed successfully!\nYou can see data in spreadsheet.");
         return res;
     }
 
