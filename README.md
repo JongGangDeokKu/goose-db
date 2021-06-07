@@ -29,8 +29,19 @@ $ npm i
 ```
 
 You can execute test with this command.
+
 ```
 $ node .
+```
+
+First, if you create database, you have to make gooseDB object like this.
+
+``` js
+await gooseDB.connect(
+        google,
+        key,
+        ~~~~~~~~ //spreadsheetid
+    );
 ```
 
 SQL syntax guides (Not reflected yet)
