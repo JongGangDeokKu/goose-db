@@ -185,6 +185,12 @@ class GooseDB {
 
                     result = await this.createTable(tableName, columns);
                 }
+            } else if (type === "drop") {
+                if (sqlAst.keyword === "database") {
+                    result = await this.dropDB();
+                } else if (sqlAst.keyword === "table") {
+                    result = await this.dropTable(sqlAst.name[0].table);
+                }
             } else if (type === "insert") {
                 const sqls = Array.isArray(sql) ? sql : [sql];
                 const ssAsts = new Object();
@@ -234,6 +240,12 @@ class GooseDB {
                 const selectQuery = sql.replace("DELETE ", "");
 
                 result = await this.delete(tableName, selectQuery);
+            } else if (type === "update") {
+                // result = await this.update(sql);
+
+                const tableName = sqlAst.table[0].table;
+                const isWhere = sqlAst.where !== null;
+                result = await this.update(tableName, sql, sqlAst.set, isWhere);
             }
 
             return result;
