@@ -28,15 +28,21 @@ const main = async () => {
         google,
         key
     );
-    
+
     // 데이터베이스 생성 쿼리
-    // await gooseDB.query(testSQL.create_database);
+    await gooseDB.query(testSQL.create_database);
 
     // 데이터베이스 삭제 쿼리
     // await gooseDB.query(testSQL.drop_database);
 
     // 테이블 생성 쿼리
-    // await gooseDB.query(testSQL.create_table);
+    await gooseDB.query(testSQL.create_table);
+
+    // 데이터 삽입 쿼리 (배열)
+    await gooseDB.query(testSQL.insert);
+
+    // // SELECT 쿼리
+    console.log(await gooseDB.query(testSQL.select));
 
     // 테이블 삭제 쿼리
     // await gooseDB.query(testSQL.drop_table);
@@ -46,17 +52,11 @@ const main = async () => {
     //     await gooseDB.query(testSQL.insert[i]);
     // }
 
-    // 데이터 삽입 쿼리 (배열)
-    // await gooseDB.query(testSQL.insert);
-
-    // // SELECT 쿼리
-    // console.log(await gooseDB.query(testSQL.select));
-
     // UNION 쿼리
     // console.log(await gooseDB.query(testSQL.union));
 
     // DELETE 쿼리
-    // await gooseDB.query(testSQL.delete);
+    await gooseDB.query(testSQL.delete);
 
     // UPDATE 쿼리
     // await gooseDB.query(testSQL.update);

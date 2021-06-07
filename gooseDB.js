@@ -229,11 +229,11 @@ class GooseDB {
                 const columnInfo = await this.getColumnInfo(tableName);
 
                 sql = this.parser.sqlify(sqlAst);
-                sql = this.colNameConverter(sql, tableName, columnInfo);
+                sql = this.colNameConverter(sql, columnInfo);
 
                 const selectQuery = sql.replace("DELETE ", "");
 
-                result = await this.delete(tableName, sql, 1);
+                result = await this.delete(tableName, selectQuery);
             }
 
             return result;
