@@ -243,7 +243,7 @@ class GooseDB {
             } else if (!this.connected) {
                 console.log("No connection with google.");
             } else {
-                console.log("Invalid sql statement.");
+                console.log(err);
             }
         }
 
