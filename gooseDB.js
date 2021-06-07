@@ -50,9 +50,9 @@ class GooseDB {
             rl.on("line", (line) => {
                 if (email_re.test(line)) {
                     console.log("Get Correct e-mail");
-                    const data = JSON.parse(fs.readFileSync("key.json"));
+                    const data = JSON.parse(fs.readFileSync("credentials.json"));
                     data.editor_email = [line];
-                    fs.writeFileSync("key.json", JSON.stringify(data));
+                    fs.writeFileSync("credentials.json", JSON.stringify(data));
                     this.key = data;
                     rl.close();
                     resolve(line);
