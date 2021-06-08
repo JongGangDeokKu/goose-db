@@ -8,7 +8,7 @@ const main = async () => {
         create_database: "CREATE DATABASE GooseDB",
         drop_database: "DROP DATABASE",
         create_table:
-            "CREATE TABLE GooseDB (ID NUMBER, NAME VARCHAR(30), GROUP_NAME VARCHAR(30), SCHOOL VARCHAR(30))",
+            "CREATE TABLE GooseDB (ID INT, NAME VARCHAR(30), GROUP_NAME VARCHAR(30), SCHOOL VARCHAR(30))",
         insert: [
             "INSERT INTO GooseDB (ID, NAME, GROUP_NAME, SCHOOL) VALUES (1, '희강', 'A', '충남대')",
             "INSERT INTO GooseDB (ID, NAME, GROUP_NAME, SCHOOL) VALUES (2, '성덕', 'A', '충남대')",
@@ -27,22 +27,22 @@ const main = async () => {
     await gooseDB.connect(
         google,
         key,
-        "1YvH-P71ufMEG3dAtHb98Os6YOaKk9M2Mp54Vh2zJTH4"
+        "1XF5SzKdtTSiy9TfM2NG99pzauy5uUZzbusjqey1Rd74"
     );
 
-    await gooseDB.addEmail("201602011@cs-cnu.org");
+    // await gooseDB.addEmail("201602011@cs-cnu.org");
 
     // 데이터베이스 생성 쿼리
-    // await gooseDB.query(testSQL.create_database);
+    await gooseDB.query(testSQL.create_database);
 
     // 데이터베이스 삭제 쿼리
     // await gooseDB.query(testSQL.drop_database);
 
     // 테이블 생성 쿼리
-    // await gooseDB.query(testSQL.create_table);
+    await gooseDB.query(testSQL.create_table);
 
     // 데이터 삽입 쿼리 (배열)
-    // await gooseDB.query(testSQL.insert);
+    await gooseDB.query(testSQL.insert);
 
     // // SELECT 쿼리
     // console.log(await gooseDB.query(testSQL.select));
@@ -59,7 +59,7 @@ const main = async () => {
     // console.log(await gooseDB.query(testSQL.union));
 
     // DELETE 쿼리
-    // await gooseDB.query(testSQL.delete);
+    await gooseDB.query(testSQL.delete);
 
     // UPDATE 쿼리
     // await gooseDB.query(testSQL.update);

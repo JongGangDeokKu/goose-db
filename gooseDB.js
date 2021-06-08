@@ -354,6 +354,7 @@ class GooseDB {
             fileId +
             "/edit"
         );
+        console.log("SpreadsheetId : " + fileId);
 
         return fileId;
     }
@@ -438,7 +439,7 @@ class GooseDB {
         return res;
     }
 
-    async select(table, sql, option) {
+    async select(table, sql, option, isPrint) {
         const startCol = option === 0 ? "A1" : "B1";
 
         const selectQuery = [[`=QUERY(${table}!${startCol}:N, "${sql}")`]];
@@ -456,8 +457,8 @@ class GooseDB {
 
         await this.api.spreadsheets.values.update(updateRequest);
         const res = await this.api.spreadsheets.values.get(selectRequest);
-
-        console.log("\nSELECT completed successfully!\nYou can see data in spreadsheet.");
+        if (isPrint)
+            console.log("\nSELECT completed successfully!");
         return res.data.values;
     }
 
@@ -483,7 +484,7 @@ class GooseDB {
 
     async delete(table, sql) {
         const newQuery = `SELECT A ${sql}`;
-        let data = await this.select(table, newQuery, 0);
+        let data = await this.select(table, newQuery, 0, false);
 
         const sheetId = await this.getSheetId(table);
         const request = {
