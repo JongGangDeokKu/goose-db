@@ -2,6 +2,8 @@
 
 ## 1. Setting for Google APIs
 
+If you want more details for setting, access [here](https://coding-heyum.tistory.com/2)
+
 First, You must have **google developer console project**.
 
 You can access at https://console.cloud.google.com/
