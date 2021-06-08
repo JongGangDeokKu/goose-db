@@ -66,6 +66,54 @@ class GooseDB {
         });
     }
 
+    async addEmail(emailAddress) {
+        const fs = require("fs");
+        if (emailAddress == null) {
+            const readline = require("readline");
+    
+            let email = null;
+            email = await new Promise((resolve) => {
+                let email_re =
+                    /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+                let rl = readline.createInterface({
+                    input: process.stdin,
+                    output: process.stdout,
+                });
+                console.log("Input your e-mail address");
+                rl.setPrompt("> ");
+                rl.prompt();
+                rl.on("line", (line) => {
+                    if (email_re.test(line)) {
+                        console.log("Get Correct e-mail");
+                        const data = JSON.parse(fs.readFileSync("credentials.json"));
+                        data.editor_email.push(line);
+                        fs.writeFileSync("credentials.json", JSON.stringify(data));
+                        this.key = data;
+                        rl.close();
+                        resolve(line);
+                    } else {
+                        console.log(
+                            "ERR:: Not e-mail regular expression\nPlease input again!"
+                        );
+                        rl.prompt();
+                    }
+                });
+            });
+        }
+        else {
+            try {
+                const data = JSON.parse(fs.readFileSync("credentials.json"));
+                data.editor_email.push(emailAddress);
+                fs.writeFileSync("credentials.json", JSON.stringify(data));
+                this.key = data;
+                console.log("Add e-mail address successfully.");
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+    }
+
     async getColumnInfo(tableName) {
         const asciiA = 65;
         const columns = new Object();
