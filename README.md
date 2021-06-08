@@ -36,7 +36,7 @@ You can execute test with this command.
 $ node .
 ```
 
-First, if you create database, you have to make gooseDB object like this.
+First, if you create one database and you want to use that database, you have to make gooseDB object like this. (Add spreadsheetId)
 
 ``` js
 await gooseDB.connect(
