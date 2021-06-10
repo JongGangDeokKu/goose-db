@@ -1,5 +1,7 @@
 const { Parser } = require("./parser");
 const { Translator } = require("./translator.js");
+const GoogleSpreadsheet = require('google-spreadsheet')
+const async = require('async')
 
 class GooseDB {
     constructor() {
