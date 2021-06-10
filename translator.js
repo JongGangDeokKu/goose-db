@@ -1,10 +1,4 @@
-const { PrettiyPrinter } = require("./prettyprinter.js");
-
 class Translator {
-    constructor() {
-        this.prettiyPrinter = new PrettiyPrinter();
-    }
-
     select_where(ast) {
         var ss_ast;
         if (ast == null) {
@@ -80,8 +74,14 @@ class Translator {
                     columns: columns,
                 };
 
-                const result = this.prettiyPrinter.createTable(ss_ast);
-                return result;
+                const new_columns = ss_ast.columns.map((column) => {
+                    return column.column.column.column;
+                });
+
+                return {
+                    tableName: ss_ast.table_name,
+                    columns: new_columns,
+                };
         }
     }
     select(ast) {
@@ -153,18 +153,18 @@ class Translator {
         switch (ast.keyword) {
             case "database":
                 ss_ast = {
-                    function: 'drop_database',
-                    db_name: ast.name.db
-                }
+                    function: "drop_database",
+                    db_name: ast.name.db,
+                };
                 break;
             case "table":
                 ss_ast = {
-                    function: 'drop_table',
-                    table_name: ast.name.table
-                }
+                    function: "drop_table",
+                    table_name: ast.name.table,
+                };
                 break;
         }
-        return ss_ast
+        return ss_ast;
     }
     delete(ast) {
         var table = ast.table[0].table;

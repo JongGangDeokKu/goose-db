@@ -24,13 +24,7 @@ const main = async () => {
     // DB 연결
     const gooseDB = new GooseDB();
 
-    await gooseDB.connect(
-        google,
-        key,
-        "1XF5SzKdtTSiy9TfM2NG99pzauy5uUZzbusjqey1Rd74"
-    );
-
-    // await gooseDB.addEmail("201602011@cs-cnu.org");
+    await gooseDB.connect(google, key, "");
 
     // 데이터베이스 생성 쿼리
     await gooseDB.query(testSQL.create_database);
