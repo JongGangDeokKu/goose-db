@@ -3,7 +3,6 @@ const { Translator } = require("./translator.js");
 
 class GooseDB {
     constructor() {
-
         this.parser = new Parser();
         this.translator = new Translator();
 
@@ -50,7 +49,9 @@ class GooseDB {
             rl.on("line", (line) => {
                 if (email_re.test(line)) {
                     console.log("Get Correct e-mail");
-                    const data = JSON.parse(fs.readFileSync("credentials.json"));
+                    const data = JSON.parse(
+                        fs.readFileSync("credentials.json")
+                    );
                     data.editor_email = [line];
                     fs.writeFileSync("credentials.json", JSON.stringify(data));
                     this.key = data;
@@ -70,7 +71,7 @@ class GooseDB {
         const fs = require("fs");
         if (emailAddress == null) {
             const readline = require("readline");
-    
+
             let email = null;
             email = await new Promise((resolve) => {
                 let email_re =
@@ -85,9 +86,14 @@ class GooseDB {
                 rl.on("line", (line) => {
                     if (email_re.test(line)) {
                         console.log("Get Correct e-mail");
-                        const data = JSON.parse(fs.readFileSync("credentials.json"));
+                        const data = JSON.parse(
+                            fs.readFileSync("credentials.json")
+                        );
                         data.editor_email.push(line);
-                        fs.writeFileSync("credentials.json", JSON.stringify(data));
+                        fs.writeFileSync(
+                            "credentials.json",
+                            JSON.stringify(data)
+                        );
                         this.key = data;
                         rl.close();
                         resolve(line);
@@ -99,16 +105,14 @@ class GooseDB {
                     }
                 });
             });
-        }
-        else {
+        } else {
             try {
                 const data = JSON.parse(fs.readFileSync("credentials.json"));
                 data.editor_email.push(emailAddress);
                 fs.writeFileSync("credentials.json", JSON.stringify(data));
                 this.key = data;
                 console.log("Add e-mail address successfully.");
-            }
-            catch (err) {
+            } catch (err) {
                 console.log(err);
             }
         }
@@ -149,8 +153,7 @@ class GooseDB {
                 properties: { title, sheetId },
             } = sheets[i];
 
-            if (title === tableName)
-                return sheetId;
+            if (title === tableName) return sheetId;
         }
         return null;
     }
@@ -329,7 +332,9 @@ class GooseDB {
         if (this.key.hasOwnProperty("editor_email")) {
             console.log("\nYou can access in " + this.key.editor_email);
         } else {
-            console.log("\nYou must have e-mail address for accessing database!");
+            console.log(
+                "\nYou must have e-mail address for accessing database!"
+            );
             await this.initEmail();
         }
 
@@ -351,8 +356,8 @@ class GooseDB {
 
         console.log(
             "\nCREATE DATABASE completed successfully!\nYou can access spreadsheet : https://docs.google.com/spreadsheets/d/" +
-            fileId +
-            "/edit"
+                fileId +
+                "/edit"
         );
         console.log("SpreadsheetId : " + fileId);
 
@@ -393,7 +398,9 @@ class GooseDB {
             return colRes;
         }
 
-        console.log("\nCREATE TABLE completed successfully! : column is not written.");
+        console.log(
+            "\nCREATE TABLE completed successfully! : column is not written."
+        );
         return res;
     }
 
@@ -457,8 +464,7 @@ class GooseDB {
 
         await this.api.spreadsheets.values.update(updateRequest);
         const res = await this.api.spreadsheets.values.get(selectRequest);
-        if (isPrint)
-            console.log("\nSELECT completed successfully!");
+        if (isPrint) console.log("\nSELECT completed successfully!");
         return res.data.values;
     }
 
@@ -478,7 +484,9 @@ class GooseDB {
             },
         };
         const res = await this.api.spreadsheets.values.append(request);
-        console.log("\nINSERT completed successfully!\nYou can see data in spreadsheet.");
+        console.log(
+            "\nINSERT completed successfully!\nYou can see data in spreadsheet."
+        );
         return res;
     }
 
@@ -507,72 +515,159 @@ class GooseDB {
         };
 
         const res = await this.api.spreadsheets.batchUpdate(request);
-        console.log("\nDELETE completed successfully!\nYou can see data in spreadsheet.");
+        console.log(
+            "\nDELETE completed successfully!\nYou can see data in spreadsheet."
+        );
         return res;
     }
 
-    async update(table, sql) {
-        // const result = await this.select(table, sql);
-        // console.log(result);
-        const sheetId = await this.getSheetId(table);
+    async update(tableName, sql, setInfo, isWhere) {
+        // // // spreadsheet key is the long id in the sheets URL
+        const doc = new GoogleSpreadsheet(this.spreadsheetId);
+        const key = this.key;
+        let sheet;
 
-        const request = {
-            spreadsheetId: this.spreadsheetId,
-            requestBody: {
-                requests: [
-                    {
-                        updateCells: {
-                            range: {
-                                startColumnIndex: 1,
-                                endColumnIndex: 1000,
-                                startRowIndex: 3,
-                                endRowIndex: 3,
-                                sheetId: sheetId,
+        if (!isWhere) {
+            async.series(
+                [
+                    function setAuth(step) {
+                        doc.useServiceAccountAuth(key, step);
+                    },
+                    function getInfoAndWorksheets(step) {
+                        doc.getInfo(function (err, info) {
+                            for (var i = 0; i < info.worksheets.length; i++) {
+                                if (tableName == info.worksheets[i].title) {
+                                    sheet = info.worksheets[i];
+                                }
+                            }
+                            step();
+                        });
+                    },
+                    function workingWithRows(step) {
+                        // google provides some query options
+                        const up_columns = [];
+                        const up_values = [];
+                        for (var i = 0; i < setInfo.length; i++) {
+                            up_columns.push(setInfo[i].column);
+                            up_values.push(setInfo[i].value.value);
+                        }
+                        sheet.getRows(
+                            {
+                                offset: 1,
+                                limit: 1500,
                             },
-                            rows: [
-                                {
-                                    values: [
-                                        {
-                                            userEnteredValue: {
-                                                stringValue: "100",
-                                            },
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
+                            function (err, rows) {
+                                rows.forEach((element) => {
+                                    for (
+                                        var i = 0;
+                                        i < up_columns.length;
+                                        i++
+                                    ) {
+                                        element[up_columns[i]] = up_values[i];
+                                        element.save();
+                                    }
+                                });
+                                step();
+                            }
+                        );
                     },
                 ],
-            },
-        };
+                function (err) {
+                    if (err) {
+                        console.log("Error: " + err);
+                    }
+                }
+            );
+        } else {
+            const newQuery = `SELECT A FROM ${tableName} WHERE${
+                sql.split("WHERE")[1]
+            }`;
+            const sqlAst = this.parser.astify(newQuery);
+            sqlAst.from = null;
+            const columnInfo = await this.getColumnInfo(tableName);
 
-        const res = await this.api.spreadsheets.batchUpdate(request);
-        console.log("\nDELETE completed successfully!\nYou can see data in spreadsheet.");
-        return res;
+            sql = this.parser.sqlify(sqlAst);
+            sql = this.colNameConverter(sql, columnInfo);
+
+            var result = await this.select(tableName, sql, 0);
+
+            async.series(
+                [
+                    function setAuth(step) {
+                        // see notes below for authentication instructions!
+                        // OR, if you cannot save the file locally (like on heroku)
+                        doc.useServiceAccountAuth(key, step);
+                    },
+                    function getInfoAndWorksheets(step) {
+                        doc.getInfo(function (err, info) {
+                            for (let i = 0; i < info.worksheets.length; i++) {
+                                if (tableName == info.worksheets[i].title) {
+                                    sheet = info.worksheets[i];
+                                }
+                            }
+                            step();
+                        });
+                    },
+                    function workingWithRows(step) {
+                        // google provides some query options
+                        const up_columns = [];
+                        const up_values = [];
+                        for (let i = 0; i < setInfo.length; i++) {
+                            up_columns.push(setInfo[i].column);
+                            up_values.push(setInfo[i].value.value);
+                        }
+
+                        sheet.getRows(
+                            {
+                                offset: 1,
+                                limit: 1500,
+                            },
+                            function (err, rows) {
+                                for (let i = 0; i < result.length; i++) {
+                                    const a = rows[result[i][0] - 1];
+                                    for (
+                                        let j = 0;
+                                        j < up_columns.length;
+                                        j++
+                                    ) {
+                                        a[up_columns[j]] = up_values[j];
+                                        a.save();
+                                    }
+                                }
+                                step();
+                            }
+                        );
+                    },
+                ],
+                function (err) {
+                    if (err) {
+                        console.log("Error: " + err);
+                    }
+                }
+            );
+        }
     }
 
     async union(sql) {
         const splitSql = sql.split("UNION");
-        const values = [];
+        const result = [];
+        const set = new Set();
 
         for (let i = 0; i < splitSql.length; i++) {
-            splitSql[i] = splitSql[i].trim();
-            const splitResult = await this.query(splitSql[i]);
-            splitResult.splice(0, 1);
+            const res = await this.query(splitSql[i].trim());
 
-            const stack = [];
-            for (let j = 0; j < splitResult.length; j++) {
-                for (let k = 0; k < splitResult[j].length; k++) {
-                    if (stack.includes(splitResult[j])) continue;
-                    stack.push(splitResult[j][k]);
+            res.forEach((data, idx) => {
+                if (i === 0 || idx !== 0) {
+                    set.add(JSON.stringify(data));
                 }
-            }
-
-            const set = new Set(stack);
-            values.push(...set);
+            });
         }
-        const set = new Set(values);
-        return [...set];
+
+        set.forEach((data) => {
+            result.push(JSON.parse(data));
+        });
+
+        return result;
     }
 }
 
