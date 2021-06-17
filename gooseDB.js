@@ -10,6 +10,7 @@ class GooseDB {
 
         this.google = null;
         this.key = null;
+        this.keyPath = "";
         this.spreadsheetId = null;
         this.client = null;
         this.api = null;
@@ -52,10 +53,10 @@ class GooseDB {
                 if (email_re.test(line)) {
                     console.log("Get Correct e-mail");
                     const data = JSON.parse(
-                        fs.readFileSync("credentials.json")
+                        fs.readFileSync(this.keyPath)
                     );
                     data.editor_email = [line];
-                    fs.writeFileSync("credentials.json", JSON.stringify(data));
+                    fs.writeFileSync(this.keyPath, JSON.stringify(data));
                     this.key = data;
                     rl.close();
                     resolve(line);
@@ -89,11 +90,11 @@ class GooseDB {
                     if (email_re.test(line)) {
                         console.log("Get Correct e-mail");
                         const data = JSON.parse(
-                            fs.readFileSync("credentials.json")
+                            fs.readFileSync(this.keyPath)
                         );
                         data.editor_email.push(line);
                         fs.writeFileSync(
-                            "credentials.json",
+                            this.keyPath,
                             JSON.stringify(data)
                         );
                         this.key = data;
@@ -109,9 +110,9 @@ class GooseDB {
             });
         } else {
             try {
-                const data = JSON.parse(fs.readFileSync("credentials.json"));
+                const data = JSON.parse(fs.readFileSync(this.keyPath));
                 data.editor_email.push(emailAddress);
-                fs.writeFileSync("credentials.json", JSON.stringify(data));
+                fs.writeFileSync(this.keyPath, JSON.stringify(data));
                 this.key = data;
                 console.log("Add e-mail address successfully.");
             } catch (err) {
@@ -160,16 +161,17 @@ class GooseDB {
         return null;
     }
 
-    async connect(google, key, spreadsheetId = null) {
+    async connect(google, keyPath, spreadsheetId = null) {
         const chalk = require("chalk");
         const figlet = require("figlet");
 
         this.google = google;
-        this.key = key;
+        this.keyPath = keyPath;
+        this.key = require(keyPath);
         this.client = new google.auth.JWT(
-            key.client_email,
+            this.key.client_email,
             null,
-            key.private_key,
+            this.key.private_key,
             [
                 "https://www.googleapis.com/auth/spreadsheets",
                 "https://www.googleapis.com/auth/drive",
@@ -277,7 +279,7 @@ class GooseDB {
                     sql = this.parser.sqlify(sqlAst);
                     sql = this.colNameConverter(sql, columnInfo);
 
-                    result = await this.select(tableName, sql, 1);
+                    result = await this.select(tableName, sql, 1, true);
                 } else {
                     result = await this.union(sql);
                 }
@@ -358,8 +360,8 @@ class GooseDB {
 
         console.log(
             "\nCREATE DATABASE completed successfully!\nYou can access spreadsheet : https://docs.google.com/spreadsheets/d/" +
-                fileId +
-                "/edit"
+            fileId +
+            "/edit"
         );
         console.log("SpreadsheetId : " + fileId);
 
@@ -581,9 +583,8 @@ class GooseDB {
                 }
             );
         } else {
-            const newQuery = `SELECT A FROM ${tableName} WHERE${
-                sql.split("WHERE")[1]
-            }`;
+            const newQuery = `SELECT A FROM ${tableName} WHERE${sql.split("WHERE")[1]
+                }`;
             const sqlAst = this.parser.astify(newQuery);
             sqlAst.from = null;
             const columnInfo = await this.getColumnInfo(tableName);
@@ -591,7 +592,7 @@ class GooseDB {
             sql = this.parser.sqlify(sqlAst);
             sql = this.colNameConverter(sql, columnInfo);
 
-            var result = await this.select(tableName, sql, 0);
+            var result = await this.select(tableName, sql, 0, false);
 
             async.series(
                 [
