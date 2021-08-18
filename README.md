@@ -26,7 +26,7 @@ And copy the key, **credentials.json** to this directory.
 You can get this repository with this command.
 
 ```
-$ git clone https://github.com/JongGangDeokKu/sql2google-ss.git
+$ git clone https://github.com/JongGangDeokKu/goose-db.git
 $ npm i
 ```
 
