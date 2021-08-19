@@ -1,9 +1,9 @@
-# goose-db
+# Goose DB
 
 [![NPM version](https://img.shields.io/npm/v/goose-db)](https://www.npmjs.com/package/goose-db)
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Goose-db is google spreadsheet based database.
+goose-db is google spreadsheet based database.
 
 In the development of programs, databases are used to store data collected from multiple PCs. If a relatively small database is needed or conditions are met, a database server is established and used directly. In this case, problems such as management problems or maintenance costs of PCs used as servers occur. GooseDB uses SQL query statements to use Google Spreadsheet, which anyone can expect to build a free 15GB database provided by Google.
 
