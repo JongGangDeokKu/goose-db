@@ -1,4 +1,4 @@
-# Goosedb
+# goose-db
 
 ## 1. Setting for Google APIs
 
