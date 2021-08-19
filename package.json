@@ -1,8 +1,27 @@
 {
-  "name": "js",
-  "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
+  "name": "goose-db",
+  "version": "0.0.1",
+  "description": "Google spreadsheet based database library for node.js",
+  "keywords": [
+    "google",
+    "spreadsheet",
+    "sheet",
+    "SQL",
+    "query",
+    "database"
+  ],
+  "homepage": "https://github.com/JongGangDeokKu/goose-db",
+  "bugs": {
+    "url": "https://github.com/JongGangDeokKu/goose-db/issues"
+  },
+  "contributors": [
+    "Seongdeok-Seo <deokk1112@gmail.com> (https://github.com/dk-kling)",
+    "Jonghyun-Baek <whdgusdl97@gmail.com> (https://github.com/whdgusdl48)",
+    "Heekang-shin <hk.shin2271@gmail.com> (https://github.com/heekang2271)"
+  ],
+  "author": "dk-kling, whdgusdl48, heekang2271",
+  "license": "MIT",
+  "main": "dist/CLI.js",
   "dependencies": {
     "chalk": "^4.1.1",
     "figlet": "^1.5.0",
@@ -10,10 +29,22 @@
     "googleapis": "^74.2.0",
     "node-sql-parser": "^3.5.0"
   },
-  "devDependencies": {},
+  "files": [
+    "dist",
+    "lib"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "dk-kling",
-  "license": "ISC"
+  "directories": {
+    "example": "examples",
+    "lib": "lib"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JongGangDeokKu/goose-db.git"
+  }
 }
