@@ -48,13 +48,7 @@ You can get this repository with this command.
 $ npm i goose-db
 ```
 
-You can execute test with this command.
-
-```
-$ node .
-```
-
-First, if you create one database and you want to use that database, you have to make gooseDB object like this. (Add spreadsheetId)
+First, if you create one database and you want to use that database, you have to make gooseDB object like this. (Add spreadsheetId) If you want more details, access [Goose DB object reference](docs/objectreference.md)
 
 ``` js
 
@@ -63,7 +57,7 @@ const { google } = require("googleapis");
 await gooseDB.connect(
         google,
         key,
-        ~~~~~~~~ //spreadsheetid
+        spreadsheetid
     );
 ```
 
