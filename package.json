@@ -41,7 +41,6 @@
     "lib": "lib"
   },
   "devDependencies": {
-    "gulp": "^4.0.2"
   },
   "repository": {
     "type": "git",
