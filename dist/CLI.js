@@ -1,6 +1,6 @@
 const readline = require('readline');
 const { google } = require("googleapis");
-const { GooseDB } = require("../gooseDB.js");
+const { GooseDB } = require("../lib/gooseDB.js");
 
 const connect = "connect";
 const configDB = "config -db";

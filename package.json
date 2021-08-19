@@ -21,7 +21,7 @@
   ],
   "author": "dk-kling, whdgusdl48, heekang2271",
   "license": "MIT",
-  "main": "dist/CLI.js",
+  "main": "lib/gooseDB.js",
   "dependencies": {
     "chalk": "^4.1.1",
     "figlet": "^1.5.0",
@@ -40,8 +40,7 @@
     "example": "examples",
     "lib": "lib"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JongGangDeokKu/goose-db.git"

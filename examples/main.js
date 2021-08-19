@@ -1,7 +1,7 @@
-const { GooseDB } = require("../gooseDB.js");
+const { GooseDB } = require("../lib/gooseDB.js");
 const { google } = require("googleapis");
 
-const { testSQL } = require("../testSQL.js");
+const { testSQL } = require("../lib/testSQL.js");
 
 const main = async () => {
     // // DB 연결
