@@ -1,5 +1,7 @@
 # GooseDB
 
+![goosedb-logo](https://user-images.githubusercontent.com/46366411/130089712-a7258b59-5c7c-481c-9d4e-8f77836eca91.jpg)
+
 [![NPM version](https://img.shields.io/npm/v/goose-db)](https://www.npmjs.com/package/goose-db)
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
