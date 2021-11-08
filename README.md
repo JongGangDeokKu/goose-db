@@ -27,11 +27,11 @@ Database managers and database developers can use this library easily because th
 | ---- | ------- |
 | [Git](https://git-scm.com/) | Latest |
 | [npm](https://www.npmjs.com/) | Latest |
-| [chalk](https://www.npmjs.com/package/chalk) | 4.1.1 |
-| [figlet](https://www.npmjs.com/package/figlet) | 1.5.0 |
-| [google-spreadsheet](https://www.npmjs.com/package/google-spreadsheet) | 2.0.7 |
-| [googleapis](https://www.npmjs.com/package/googleapis) | 74.2.0 |
-| [node-sql-parser](https://www.npmjs.com/package/node-sql-parser) | 3.5.0 |
+| [chalk](https://www.npmjs.com/package/chalk) | 4.1.2 |
+| [figlet](https://www.npmjs.com/package/figlet) | 1.5.2 |
+| [google-spreadsheet](https://www.npmjs.com/package/google-spreadsheet) | 3.1.15 |
+| [googleapis](https://www.npmjs.com/package/googleapis) | 89.0.0 |
+| [node-sql-parser](https://www.npmjs.com/package/node-sql-parser) | 3.9.4 |
 
 ## Setting for Google APIs
 
