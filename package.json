@@ -1,5 +1,5 @@
 {
-  "name": "goose-db",
+  "name": "@JongGangDeokKu/goose-db",
   "version": "0.0.3",
   "description": "Google spreadsheet based database library for node.js",
   "keywords": [
@@ -49,6 +49,9 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JongGangDeokKu/goose-db.git"
+    "url": "https://github.com/JongGangDeokKu/goose-db.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
