@@ -1,6 +1,6 @@
 {
   "name": "goose-db",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Google spreadsheet based database library for node.js",
   "keywords": [
     "google",
@@ -23,11 +23,17 @@
   "license": "MIT",
   "main": "lib/gooseDB.js",
   "dependencies": {
-    "chalk": "^4.1.1",
-    "figlet": "^1.5.0",
-    "google-spreadsheet": "^2.0.7",
-    "googleapis": "^74.2.0",
-    "node-sql-parser": "^3.5.0"
+    "async": "^3.2.1",
+    "google-spreadsheet": "^3.1.15",
+    "chalk": "^4.1.2",
+    "figlet": "^1.5.2",
+    "google-auth-library": "^7.10.2",
+    "googleapis": "^89.0.0",
+    "gtoken": "^5.3.1",
+    "lodash": "^4.17.21",
+    "lodash.noop": "^3.0.1",
+    "node-sql-parser": "^3.9.4",
+    "npm-check-updates": "^12.0.0"
   },
   "files": [
     "dist",
