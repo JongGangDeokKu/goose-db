@@ -21,17 +21,17 @@ You can access the database as a google spreadsheet that is presented by excel f
 
 Database managers and database developers can use this library easily because this library supports `SQL syntax`. If you want to use `SQL syntax`, use the method, `query()`. If you need more information, read [Goose DB method reference](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/methodreference.md).
 
-## Dependencies 
+## Dependencies
 
-| Name | Version | 
-| ---- | ------- |
-| [Git](https://git-scm.com/) | Latest |
-| [npm](https://www.npmjs.com/) | Latest |
-| [chalk](https://www.npmjs.com/package/chalk) | 4.1.2 |
-| [figlet](https://www.npmjs.com/package/figlet) | 1.5.2 |
-| [google-spreadsheet](https://www.npmjs.com/package/google-spreadsheet) | 3.1.15 |
-| [googleapis](https://www.npmjs.com/package/googleapis) | 89.0.0 |
-| [node-sql-parser](https://www.npmjs.com/package/node-sql-parser) | 3.9.4 |
+| Name                                                                   | Version |
+| ---------------------------------------------------------------------- | ------- |
+| [Git](https://git-scm.com/)                                            | Latest  |
+| [npm](https://www.npmjs.com/)                                          | Latest  |
+| [chalk](https://www.npmjs.com/package/chalk)                           | 4.1.2   |
+| [figlet](https://www.npmjs.com/package/figlet)                         | 1.5.2   |
+| [google-spreadsheet](https://www.npmjs.com/package/google-spreadsheet) | 3.1.15  |
+| [googleapis](https://www.npmjs.com/package/googleapis)                 | 89.0.0  |
+| [node-sql-parser](https://www.npmjs.com/package/node-sql-parser)       | 3.9.4   |
 
 ## Setting for Google APIs
 
@@ -47,8 +47,7 @@ If you want to full access, Select Role to Owner.
 
 When you add credential to your project, you have to select **Web server, Application Data**, and you must have to key type, **JSON**.
 
-And copy the key, `key.json` to this directory.
-
+And create a directory called `credentials` in the root path of your application and copy `key.json` to this directory.
 
 ## Guides
 
@@ -60,22 +59,20 @@ $ npm i goose-db
 
 First, if you create one database and you want to use that database, you have to make gooseDB object like this. (Add spreadsheetId) If you want more details, read [Goose DB object reference](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/objectreference.md).
 
-``` js
+```js
+const { GooseDB } = require("goose-db");
 
-const { google } = require("googleapis");
+const gooseDB = new GooseDB();
+await gooseDB.connect("key.json", spreadsheetid);
 
-await gooseDB.connect(
-        google,
-        key,
-        spreadsheetid
-    );
+await gooseDB.query(SQL_QUERY);
 ```
 
 SQL syntax guides (Not reflected yet)
 
 ## GooseDB References
 
-- [Start GooseDB](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/start.md)
-- [GooseDB object reference](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/objectreference.md)
-- [GooseDB method reference](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/methodreference.md)
-- [GooseDB handling history reference](https://support.google.com/a/users/answer/9308971?hl=en)
+-   [Start GooseDB](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/start.md)
+-   [GooseDB object reference](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/objectreference.md)
+-   [GooseDB method reference](https://github.com/JongGangDeokKu/goose-db/blob/node-js/docs/methodreference.md)
+-   [GooseDB handling history reference](https://support.google.com/a/users/answer/9308971?hl=en)
